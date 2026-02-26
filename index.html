@@ -1,47 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Launch Menu</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Launch Menu</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#0d1117;--bg2:#161b22;
+    --text:#c9d1d9;--text-dim:#8b949e;--text-bright:#f0f6fc;
+    --gold:#ffd700;--orange:#f0883e;
+    --card-bg:rgba(255,255,255,0.04);--card-border:rgba(255,255,255,0.08);
+  }
+  html{font-size:14px}
+  body{
+    background:var(--bg);color:var(--text);
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            color: #fff;
-        }
+  header{
+    text-align:center;padding:3rem 1rem 2rem;
+    background:linear-gradient(180deg,rgba(22,33,62,.8) 0%,transparent 100%);
+    width:100%;
+  }
+  header h1{
+    font-size:2.2rem;font-weight:800;letter-spacing:.08em;
+    background:linear-gradient(135deg,var(--gold),var(--orange));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    background-clip:text;
+  }
+  header p{color:var(--text-dim);font-size:1rem;margin-top:.5rem}
 
-        .container {
-            text-align: center;
-            padding: 2rem;
-        }
+  .container{max-width:900px;width:100%;padding:2rem 1.5rem 3rem}
 
-        h1 {
-            font-size: 3rem;
-            margin-bottom: 0.5rem;
-            letter-spacing: 0.05em;
-        }
+  .card-grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+    gap:1.2rem;
+  }
 
-        p {
-            font-size: 1.2rem;
-            color: #b0b0d0;
-        }
-    </style>
+  .card{
+    background:var(--card-bg);border:1px solid var(--card-border);
+    border-radius:14px;padding:1.5rem;transition:all .35s ease;
+    border-left:3px solid var(--accent);
+    text-decoration:none;color:inherit;display:block;
+  }
+  .card:hover{
+    border-color:var(--accent);
+    box-shadow:0 8px 30px color-mix(in srgb,var(--accent) 20%,transparent);
+    transform:translateY(-3px);
+  }
+  .card h2{
+    font-size:1.2rem;font-weight:700;color:var(--text-bright);
+    margin-bottom:.4rem;
+  }
+  .card p{font-size:.85rem;color:var(--text-dim);line-height:1.6}
+  .card .tags{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.8rem}
+  .card .tag{
+    font-size:.7rem;padding:.2rem .6rem;border-radius:4px;
+    background:rgba(255,255,255,.05);color:var(--text-dim);
+  }
+
+  footer{
+    text-align:center;padding:2rem;
+    border-top:1px solid var(--card-border);
+    color:var(--text-dim);font-size:.8rem;width:100%;
+  }
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>Launch Menu</h1>
-        <p>Coming soon.</p>
-    </div>
+
+<header>
+  <h1>Launch Menu</h1>
+  <p>Project pages and documentation</p>
+</header>
+
+<div class="container">
+  <div class="card-grid">
+
+    <a class="card" style="--accent:#f85149" href="gaming-dev-roadmap.html">
+      <h2>Gaming Dev Roadmap</h2>
+      <p>What a strategy/RPG gamer can build with Claude Code CLI + Gaming APIs. Project ideas, learning path, revenue projections, and API reference.</p>
+      <div class="tags">
+        <span class="tag">Claude Code</span>
+        <span class="tag">Gaming APIs</span>
+        <span class="tag">Discord Bots</span>
+        <span class="tag">Revenue</span>
+      </div>
+    </a>
+
+    <a class="card" style="--accent:#58a6ff" href="orchestration-diagram.html">
+      <h2>Orchestration Diagram</h2>
+      <p>YouTube Content Factory parallel agent orchestration architecture. Interactive pipeline visualization with simulation mode.</p>
+      <div class="tags">
+        <span class="tag">YouTube</span>
+        <span class="tag">Orchestration</span>
+        <span class="tag">Claude Sonnet</span>
+        <span class="tag">Claude Haiku</span>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<footer>
+  Launch Menu &mdash; GitHub Pages
+</footer>
+
 </body>
 </html>

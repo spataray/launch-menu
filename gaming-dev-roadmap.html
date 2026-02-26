@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gaming Dev Roadmap &mdash; Claude Code + Gaming APIs</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#0d1117;--bg2:#161b22;--bg3:#1c2129;
+    --text:#c9d1d9;--text-dim:#8b949e;--text-bright:#f0f6fc;
+    --gold:#ffd700;--green:#2ea043;--blue:#58a6ff;--red:#f85149;
+    --purple:#bc8cff;--orange:#f0883e;--teal:#3fb950;--cyan:#79c0ff;
+    --pink:#f778ba;--indigo:#a5d6ff;
+    --card-bg:rgba(255,255,255,0.04);--card-border:rgba(255,255,255,0.08);
+    --glow:0 0 20px rgba(255,215,0,0.2);
+  }
+  html{font-size:14px;scroll-behavior:smooth}
+  body{
+    background:var(--bg);color:var(--text);
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    min-height:100vh;
+  }
+
+  /* ── Header ── */
+  header{
+    text-align:center;padding:3rem 1rem 2rem;
+    background:linear-gradient(180deg,rgba(22,33,62,.8) 0%,transparent 100%);
+  }
+  header h1{
+    font-size:2.2rem;font-weight:800;letter-spacing:.08em;
+    background:linear-gradient(135deg,var(--gold),var(--orange));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    background-clip:text;
+  }
+  header .subtitle{color:var(--text-dim);font-size:1rem;margin-top:.5rem}
+  header .tags{display:flex;flex-wrap:wrap;justify-content:center;gap:.5rem;margin-top:1rem}
+  header .tag{
+    font-size:.75rem;padding:.3rem .8rem;border-radius:20px;
+    border:1px solid var(--card-border);color:var(--text-dim);
+  }
+
+  .container{max-width:1200px;margin:0 auto;padding:0 1.5rem 3rem}
+
+  /* ── Steam Library ── */
+  .steam-section{margin-bottom:2.5rem}
+  .steam-section h2{
+    font-size:1.4rem;font-weight:700;color:var(--text-bright);
+    margin-bottom:1rem;display:flex;align-items:center;gap:.6rem;
+  }
+  .steam-section h2 .icon{font-size:1.6rem}
+  .genre-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem}
+  .genre-card{
+    background:var(--card-bg);border:1px solid var(--card-border);
+    border-radius:12px;padding:1.2rem;transition:all .3s ease;
+    border-left:3px solid var(--accent);
+  }
+  .genre-card:hover{
+    border-color:var(--accent);
+    box-shadow:0 4px 20px color-mix(in srgb,var(--accent) 20%,transparent);
+    transform:translateY(-2px);
+  }
+  .genre-card h3{font-size:1rem;font-weight:700;color:var(--accent);margin-bottom:.4rem}
+  .genre-card .games{font-size:.8rem;color:var(--text-dim);line-height:1.6}
+  .genre-card .games span{
+    display:inline-block;background:rgba(255,255,255,.05);
+    padding:.1rem .5rem;border-radius:4px;margin:.15rem .2rem .15rem 0;
+    font-size:.72rem;
+  }
+  .genre-card .insight{
+    margin-top:.7rem;padding-top:.7rem;border-top:1px solid var(--card-border);
+    font-size:.78rem;color:var(--text);font-style:italic;
+  }
+
+  /* ── Section headers ── */
+  .section-header{
+    font-size:1.4rem;font-weight:700;color:var(--text-bright);
+    margin:2.5rem 0 1.2rem;display:flex;align-items:center;gap:.6rem;
+    padding-bottom:.6rem;border-bottom:2px solid var(--card-border);
+  }
+  .section-header .num{
+    background:var(--gold);color:#000;font-weight:800;
+    width:32px;height:32px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:.9rem;flex-shrink:0;
+  }
+
+  /* ── Project cards ── */
+  .project-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:1.2rem}
+  .project-card{
+    background:var(--bg2);border:1px solid var(--card-border);
+    border-radius:14px;overflow:hidden;transition:all .35s ease;
+    cursor:pointer;position:relative;
+  }
+  .project-card:hover{
+    border-color:var(--accent);
+    box-shadow:0 8px 30px color-mix(in srgb,var(--accent) 15%,transparent);
+    transform:translateY(-3px);
+  }
+  .project-card .card-top{
+    padding:1.2rem 1.2rem .8rem;
+    border-bottom:1px solid var(--card-border);
+  }
+  .project-card .card-top h3{
+    font-size:1.1rem;font-weight:700;color:var(--text-bright);margin-bottom:.3rem;
+  }
+  .project-card .card-top .card-desc{font-size:.82rem;color:var(--text-dim);line-height:1.5}
+  .project-card .card-meta{
+    padding:.8rem 1.2rem;display:flex;flex-wrap:wrap;gap:.6rem;
+  }
+  .meta-badge{
+    font-size:.7rem;padding:.25rem .6rem;border-radius:6px;font-weight:600;
+    display:inline-flex;align-items:center;gap:.3rem;
+  }
+  .meta-badge.difficulty{background:rgba(88,166,255,.12);color:var(--blue)}
+  .meta-badge.revenue{background:rgba(46,160,67,.12);color:var(--green)}
+  .meta-badge.time{background:rgba(240,136,62,.12);color:var(--orange)}
+  .meta-badge.tech{background:rgba(188,140,255,.12);color:var(--purple)}
+
+  .project-card .card-body{
+    padding:0 1.2rem 1.2rem;display:none;
+  }
+  .project-card.open .card-body{display:block}
+  .project-card .card-body h4{
+    font-size:.85rem;font-weight:700;color:var(--text-bright);
+    margin:.8rem 0 .4rem;
+  }
+  .project-card .card-body ul{
+    list-style:none;padding:0;
+  }
+  .project-card .card-body li{
+    font-size:.8rem;color:var(--text-dim);padding:.25rem 0;
+    padding-left:1rem;position:relative;line-height:1.5;
+  }
+  .project-card .card-body li::before{
+    content:'';position:absolute;left:0;top:.55rem;
+    width:5px;height:5px;border-radius:50%;background:var(--accent);
+  }
+  .project-card .card-body .code-block{
+    background:rgba(0,0,0,.3);border:1px solid var(--card-border);
+    border-radius:8px;padding:.8rem 1rem;margin:.6rem 0;
+    font-family:'Cascadia Code','Fira Code',monospace;
+    font-size:.75rem;color:var(--cyan);line-height:1.6;
+    overflow-x:auto;white-space:pre;
+  }
+  .project-card .expand-hint{
+    text-align:center;padding:.4rem;font-size:.7rem;color:var(--text-dim);
+    transition:color .2s;
+  }
+  .project-card:hover .expand-hint{color:var(--accent)}
+  .project-card.open .expand-hint{display:none}
+
+  /* ── API Table ── */
+  .api-table{
+    width:100%;border-collapse:collapse;margin:1rem 0;
+    background:var(--bg2);border-radius:12px;overflow:hidden;
+    border:1px solid var(--card-border);
+  }
+  .api-table th{
+    background:rgba(255,255,255,.06);color:var(--text-bright);
+    padding:.8rem 1rem;text-align:left;font-size:.8rem;
+    font-weight:700;text-transform:uppercase;letter-spacing:.05em;
+  }
+  .api-table td{
+    padding:.7rem 1rem;border-top:1px solid var(--card-border);
+    font-size:.82rem;color:var(--text-dim);
+  }
+  .api-table tr:hover td{background:rgba(255,255,255,.02)}
+  .api-table .api-name{color:var(--text-bright);font-weight:600}
+  .api-table .free-yes{color:var(--green);font-weight:600}
+  .api-table .free-no{color:var(--red);font-weight:600}
+  .api-table a{color:var(--blue);text-decoration:none}
+  .api-table a:hover{text-decoration:underline}
+
+  /* ── Roadmap timeline ── */
+  .roadmap{position:relative;padding-left:2.5rem;margin:1.5rem 0}
+  .roadmap::before{
+    content:'';position:absolute;left:14px;top:0;bottom:0;
+    width:2px;background:linear-gradient(180deg,var(--gold),var(--purple),var(--green));
+  }
+  .roadmap-item{
+    position:relative;margin-bottom:1.5rem;
+    background:var(--card-bg);border:1px solid var(--card-border);
+    border-radius:12px;padding:1.2rem;transition:all .3s ease;
+  }
+  .roadmap-item:hover{
+    border-color:var(--accent);
+    box-shadow:0 4px 20px color-mix(in srgb,var(--accent) 15%,transparent);
+  }
+  .roadmap-item::before{
+    content:'';position:absolute;left:-2.05rem;top:1.3rem;
+    width:14px;height:14px;border-radius:50%;
+    background:var(--accent);border:3px solid var(--bg);
+    box-shadow:0 0 10px color-mix(in srgb,var(--accent) 40%,transparent);
+  }
+  .roadmap-item .rm-time{
+    font-size:.7rem;font-weight:700;color:var(--accent);
+    text-transform:uppercase;letter-spacing:.08em;margin-bottom:.3rem;
+  }
+  .roadmap-item h4{font-size:1rem;font-weight:700;color:var(--text-bright);margin-bottom:.3rem}
+  .roadmap-item p{font-size:.82rem;color:var(--text-dim);line-height:1.6}
+  .roadmap-item .learns{
+    margin-top:.6rem;display:flex;flex-wrap:wrap;gap:.4rem;
+  }
+  .roadmap-item .learns span{
+    font-size:.68rem;padding:.2rem .5rem;border-radius:4px;
+    background:rgba(255,255,255,.05);color:var(--text-dim);
+  }
+
+  /* ── Revenue chart ── */
+  .revenue-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin:1rem 0}
+  .revenue-card{
+    background:var(--bg2);border:1px solid var(--card-border);
+    border-radius:12px;padding:1.2rem;text-align:center;
+    transition:all .3s ease;
+  }
+  .revenue-card:hover{transform:translateY(-3px);border-color:var(--accent)}
+  .revenue-card .rev-type{font-size:.75rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.06em}
+  .revenue-card .rev-amount{
+    font-size:1.8rem;font-weight:800;margin:.3rem 0;
+    background:linear-gradient(135deg,var(--accent),var(--gold));
+    -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    background-clip:text;
+  }
+  .revenue-card .rev-desc{font-size:.75rem;color:var(--text-dim);line-height:1.4}
+  .revenue-card .rev-bar{
+    margin-top:.8rem;height:4px;border-radius:2px;
+    background:rgba(255,255,255,.06);overflow:hidden;
+  }
+  .revenue-card .rev-bar-fill{
+    height:100%;border-radius:2px;background:var(--accent);
+    transition:width 1s ease;
+  }
+
+  /* ── Claude Code section ── */
+  .claude-box{
+    background:linear-gradient(135deg,rgba(255,215,0,.05),rgba(188,140,255,.05));
+    border:1px solid rgba(255,215,0,.15);border-radius:14px;
+    padding:1.5rem;margin:1.5rem 0;
+  }
+  .claude-box h3{
+    font-size:1.1rem;font-weight:700;color:var(--gold);margin-bottom:.8rem;
+    display:flex;align-items:center;gap:.5rem;
+  }
+  .claude-box .point{
+    display:flex;gap:.8rem;align-items:flex-start;
+    margin-bottom:.7rem;
+  }
+  .claude-box .point-num{
+    background:var(--gold);color:#000;font-weight:800;
+    min-width:24px;height:24px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:.72rem;flex-shrink:0;margin-top:.1rem;
+  }
+  .claude-box .point p{font-size:.85rem;color:var(--text);line-height:1.6}
+  .claude-box .point strong{color:var(--text-bright)}
+
+  /* ── Footer ── */
+  footer{
+    text-align:center;padding:2rem;
+    border-top:1px solid var(--card-border);
+    color:var(--text-dim);font-size:.8rem;
+  }
+
+  /* ── Animations ── */
+  @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+  .animate-in{animation:fadeUp .5s ease forwards;opacity:0}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Gaming Dev Roadmap</h1>
+  <p class="subtitle">What a 22-year-old strategy/RPG gamer can build with Claude Code CLI + Gaming APIs</p>
+  <div class="tags">
+    <span class="tag">Claude Code CLI</span>
+    <span class="tag">Gaming APIs</span>
+    <span class="tag">Discord Bots</span>
+    <span class="tag">AI + Gaming</span>
+    <span class="tag">Revenue Potential</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- STEAM LIBRARY ANALYSIS -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="steam-section">
+    <h2><span class="icon">&#127918;</span> Steam Library Profile</h2>
+    <div class="genre-grid">
+      <div class="genre-card" style="--accent:var(--red)">
+        <h3>Grand Strategy / 4X</h3>
+        <div class="games">
+          <span>Total War: WARHAMMER III</span>
+          <span>Total War: WARHAMMER II</span>
+          <span>Age of Wonders 4</span>
+          <span>Men of War: Assault Squad 2</span>
+        </div>
+        <div class="insight">Thinks in systems, army compositions, resource management. This is programming logic already.</div>
+      </div>
+      <div class="genre-card" style="--accent:var(--purple)">
+        <h3>Deep / Narrative RPGs</h3>
+        <div class="games">
+          <span>Baldur's Gate 3</span>
+          <span>Cyberpunk 2077</span>
+          <span>Fallout: New Vegas</span>
+          <span>Dragon Age: Origins</span>
+          <span>KOTOR II</span>
+        </div>
+        <div class="insight">Loves character builds, dialogue trees, branching systems. Perfect fit for AI-powered build optimizers.</div>
+      </div>
+      <div class="genre-card" style="--accent:var(--orange)">
+        <h3>Indie / Tactical / Management</h3>
+        <div class="games">
+          <span>TABS</span>
+          <span>Limbus Company</span>
+          <span>Our Adventurer Guild</span>
+          <span>Ancient Warfare 3</span>
+          <span>Goblin Nest</span>
+        </div>
+        <div class="insight">Drawn to emergent systems and physics sandboxes. Mod-friendly games with active communities.</div>
+      </div>
+      <div class="genre-card" style="--accent:var(--blue)">
+        <h3>Card / Gacha / Roguelike</h3>
+        <div class="games">
+          <span>Limbus Company</span>
+          <span>Ark Re:Code</span>
+          <span>Humiliation Dungeon Survivors</span>
+        </div>
+        <div class="insight">Enjoys optimization puzzles, tier lists, meta analysis. Natural fit for data-driven tools.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- GAMING APIs -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="section-header"><span class="num">1</span> Available Gaming APIs</div>
+
+  <table class="api-table">
+    <tr>
+      <th>API</th>
+      <th>Games / Data</th>
+      <th>Free?</th>
+      <th>Skill Level</th>
+      <th>Best For</th>
+    </tr>
+    <tr>
+      <td class="api-name"><a href="https://steamcommunity.com/dev" target="_blank">Steam Web API</a></td>
+      <td>Player stats, playtime, achievements, game library, friend lists, store data</td>
+      <td class="free-yes">Yes (instant key)</td>
+      <td>Beginner</td>
+      <td>Library tools, achievement trackers, recommenders</td>
+    </tr>
+    <tr>
+      <td class="api-name"><a href="https://developer.riotgames.com" target="_blank">Riot Games API</a></td>
+      <td>LoL, Valorant, TFT &mdash; match history, ranked data, champion mastery</td>
+      <td class="free-yes">Yes (dev key auto)</td>
+      <td>Intermediate</td>
+      <td>Stat trackers, AI coaches, comp advisors</td>
+    </tr>
+    <tr>
+      <td class="api-name"><a href="https://fortnite-api.com" target="_blank">Fortnite API</a></td>
+      <td>Cosmetics, daily shop, map data, player stats</td>
+      <td class="free-yes">Yes (no key needed)</td>
+      <td>Beginner</td>
+      <td>Shop bots, collection trackers</td>
+    </tr>
+    <tr>
+      <td class="api-name"><a href="https://develop.battle.net" target="_blank">Blizzard API</a></td>
+      <td>WoW characters, Diablo IV, Hearthstone cards, raid progress</td>
+      <td class="free-yes">Yes (non-commercial)</td>
+      <td>Intermediate</td>
+      <td>Guild tools, build optimizers</td>
+    </tr>
+    <tr>
+      <td class="api-name"><a href="https://discord.com/developers/docs" target="_blank">Discord API</a></td>
+      <td>Bot platform &mdash; messages, voice, slash commands, server management</td>
+      <td class="free-yes">Yes</td>
+      <td>Beginner</td>
+      <td>Gaming bots, community tools</td>
+    </tr>
+    <tr>
+      <td class="api-name"><a href="https://create.roblox.com/docs/cloud/open-cloud" target="_blank">Roblox Open Cloud</a></td>
+      <td>DataStore, messaging, assets, game management</td>
+      <td class="free-yes">Yes</td>
+      <td>Beginner</td>
+      <td>Game dashboards, external tools</td>
+    </tr>
+    <tr>
+      <td class="api-name"><a href="https://dev.overwolf.com" target="_blank">Overwolf Platform</a></td>
+      <td>In-game overlay framework &mdash; HTML/CSS/JS based</td>
+      <td class="free-yes">Yes (rev share)</td>
+      <td>Intermediate</td>
+      <td>In-game overlays, $300M+ paid to creators</td>
+    </tr>
+    <tr>
+      <td class="api-name"><a href="https://docs.anthropic.com" target="_blank">Claude API (Anthropic)</a></td>
+      <td>AI reasoning, analysis, code generation, natural language</td>
+      <td>Free tier + paid</td>
+      <td>Beginner</td>
+      <td>AI coaches, build advisors, NPC dialogue</td>
+    </tr>
+  </table>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- PROJECT IDEAS (tailored to his library) -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="section-header"><span class="num">2</span> Project Ideas (Matched to His Games)</div>
+
+  <div class="project-grid">
+
+    <!-- Project 1: BG3 Build Optimizer -->
+    <div class="project-card" style="--accent:var(--purple)" onclick="this.classList.toggle('open')">
+      <div class="card-top">
+        <h3>BG3 / D&amp;D Build Optimizer</h3>
+        <div class="card-desc">AI-powered character build advisor. Ask in plain English: "Best Paladin/Warlock multiclass for melee damage" &mdash; get an optimized build with reasoning.</div>
+      </div>
+      <div class="card-meta">
+        <span class="meta-badge difficulty">Beginner-Intermediate</span>
+        <span class="meta-badge revenue">$1,000-2,000/mo potential</span>
+        <span class="meta-badge time">2-4 weeks to MVP</span>
+        <span class="meta-badge tech">Claude API + Web App</span>
+      </div>
+      <div class="expand-hint">&#9662; Click for details</div>
+      <div class="card-body">
+        <h4>Why This Is Perfect</h4>
+        <ul>
+          <li>r/BaldursGate3 has 1.4M+ members constantly asking "what's the best build for X?"</li>
+          <li>He already knows D&amp;D 5e mechanics from playing BG3 &mdash; domain expertise is the hard part</li>
+          <li>No good AI-powered build tool exists &mdash; current guides are static articles</li>
+          <li>Claude API handles the reasoning; he provides the game knowledge</li>
+        </ul>
+        <h4>How It Works</h4>
+        <ul>
+          <li>User describes what they want: class fantasy, playstyle, party role</li>
+          <li>Claude API analyzes D&amp;D 5e rules + BG3-specific mechanics (fed via system prompt)</li>
+          <li>Returns: class split, ability scores, feat order, spell selection, equipment priorities</li>
+          <li>Patch notes fed as context so recommendations stay current</li>
+        </ul>
+        <h4>Tech Stack</h4>
+        <div class="code-block">Frontend:  HTML/CSS/JS (or React)
+Backend:   Node.js or Python
+AI:        Claude API (Anthropic SDK)
+Database:  SQLite or Supabase (save builds)
+Deploy:    Vercel or Railway (free tier)
+Revenue:   $5-10/mo subscription</div>
+        <h4>Monetization</h4>
+        <ul>
+          <li>Free tier: 3 builds/day. Premium: unlimited + save/share builds</li>
+          <li>200 subscribers at $5/mo = $1,000/month</li>
+          <li>Cross-promote on Reddit, Discord, YouTube build guides</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Project 2: Total War Army Composer -->
+    <div class="project-card" style="--accent:var(--red)" onclick="this.classList.toggle('open')">
+      <div class="card-top">
+        <h3>Total War: Warhammer Army Composer</h3>
+        <div class="card-desc">Pick your faction, your opponent, your budget &mdash; AI suggests the optimal army composition with tactical reasoning for why each unit matters.</div>
+      </div>
+      <div class="card-meta">
+        <span class="meta-badge difficulty">Intermediate</span>
+        <span class="meta-badge revenue">$500-1,500/mo potential</span>
+        <span class="meta-badge time">4-6 weeks to MVP</span>
+        <span class="meta-badge tech">Claude API + Game Data</span>
+      </div>
+      <div class="expand-hint">&#9662; Click for details</div>
+      <div class="card-body">
+        <h4>Why This Works</h4>
+        <ul>
+          <li>Total War: Warhammer has a massive competitive multiplayer scene</li>
+          <li>Army building is complex &mdash; hundreds of units, dozens of factions, counter-matchups</li>
+          <li>Existing tools are spreadsheets and tier lists &mdash; no AI advisor exists</li>
+          <li>The community wiki + game data files are well-documented and moddable</li>
+        </ul>
+        <h4>How It Works</h4>
+        <ul>
+          <li>Feed Claude a structured database of all units (stats, costs, roles, synergies)</li>
+          <li>User picks: faction, opponent faction, gold budget, playstyle preference</li>
+          <li>Claude returns: army list + tactical explanation ("Skaven struggle vs armor, so Ratling Guns and Plague Catapults are priority")</li>
+          <li>Could integrate with Steam Workshop for mod visibility</li>
+        </ul>
+        <h4>Tech Stack</h4>
+        <div class="code-block">Data:      TWW3 game files (XML/tables, community wikis)
+AI:        Claude API with unit database in system prompt
+Frontend:  Web app with faction selector UI
+Deploy:    Vercel or Netlify
+Community: Steam Workshop integration, Reddit promotion</div>
+      </div>
+    </div>
+
+    <!-- Project 3: RPG Save Storyteller -->
+    <div class="project-card" style="--accent:var(--gold)" onclick="this.classList.toggle('open')">
+      <div class="card-top">
+        <h3>RPG Save File Storyteller</h3>
+        <div class="card-desc">Upload your save file from BG3, Fallout NV, or Cyberpunk &mdash; AI generates a narrative summary of your playthrough. Shareable, viral potential.</div>
+      </div>
+      <div class="card-meta">
+        <span class="meta-badge difficulty">Intermediate</span>
+        <span class="meta-badge revenue">Viral / Ad Revenue</span>
+        <span class="meta-badge time">4-8 weeks to MVP</span>
+        <span class="meta-badge tech">Claude API + File Parsing</span>
+      </div>
+      <div class="expand-hint">&#9662; Click for details</div>
+      <div class="card-body">
+        <h4>The Concept</h4>
+        <ul>
+          <li>Parse save files (BG3 = XML/JSON, Fallout NV = documented format, Cyberpunk = structured)</li>
+          <li>Extract: choices made, companions, quests completed, character stats, karma, kill count</li>
+          <li>Claude generates a personalized narrative: your playthrough told as a story</li>
+          <li>Output is shareable &mdash; image cards, social media posts, Reddit threads</li>
+        </ul>
+        <h4>Example Output</h4>
+        <div class="code-block">"You arrived in the Mojave as a courier left for dead.
+You sided with Mr. House, betrayed the NCR at Hoover Dam,
+and let Caesar's Legion burn. Boone never forgave you for
+Bitter Springs. Level 34. 847 kills. Karma: Very Evil.
+
+The Mojave remembers what you did."</div>
+        <h4>Why It Goes Viral</h4>
+        <ul>
+          <li>RPG players LOVE sharing their playthroughs &mdash; this gives them a shareable artifact</li>
+          <li>Reddit posts like "AI wrote the story of my BG3 playthrough" would explode</li>
+          <li>Each generated story is unique &mdash; drives repeat use and sharing</li>
+          <li>Expand to more games over time as the parser library grows</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Project 4: Discord Gaming Bot -->
+    <div class="project-card" style="--accent:var(--blue)" onclick="this.classList.toggle('open')">
+      <div class="card-top">
+        <h3>Multi-Game Discord Bot</h3>
+        <div class="card-desc">A Swiss army knife bot for gaming servers: stat lookups, game night scheduling, AI-powered strategy advice, ranked session tracking.</div>
+      </div>
+      <div class="card-meta">
+        <span class="meta-badge difficulty">Beginner</span>
+        <span class="meta-badge revenue">$150-2,000/mo at scale</span>
+        <span class="meta-badge time">1-2 weeks to basic bot</span>
+        <span class="meta-badge tech">Discord.js + APIs</span>
+      </div>
+      <div class="expand-hint">&#9662; Click for details</div>
+      <div class="card-body">
+        <h4>Features to Build</h4>
+        <ul>
+          <li><strong>/stats [game] [username]</strong> &mdash; pulls stats from Steam, Riot, or other APIs</li>
+          <li><strong>/gamenight</strong> &mdash; polls server, finds best time, creates voice event automatically</li>
+          <li><strong>/build [game] [description]</strong> &mdash; Claude AI suggests character builds</li>
+          <li><strong>/session start / end</strong> &mdash; logs ranked progress, posts summary</li>
+          <li><strong>/draft</strong> &mdash; organizes custom scrims, assigns teams, tracks brackets</li>
+        </ul>
+        <h4>Monetization Path</h4>
+        <ul>
+          <li>Free tier: basic commands. Premium ($3/mo): AI coaching, unlimited lookups, custom embeds</li>
+          <li>Discord keeps only 10% &mdash; you keep 90% of subscription revenue</li>
+          <li>1,000 servers x 5% premium conversion x $3 = $150/month</li>
+          <li>10,000 servers = $1,500/month</li>
+        </ul>
+        <h4>Why Start Here</h4>
+        <div class="code-block">// This is literally all it takes to start:
+npm init -y
+npm install discord.js @anthropic-ai/sdk
+// Claude Code writes the rest for you</div>
+      </div>
+    </div>
+
+    <!-- Project 5: Steam Library Analyzer -->
+    <div class="project-card" style="--accent:var(--teal)" onclick="this.classList.toggle('open')">
+      <div class="card-top">
+        <h3>Steam Library Analyzer + Recommender</h3>
+        <div class="card-desc">Paste your Steam profile URL &mdash; get a full analysis of your gaming habits, unplayed games, achievement rarity, and AI-powered "play next" recommendations.</div>
+      </div>
+      <div class="card-meta">
+        <span class="meta-badge difficulty">Beginner</span>
+        <span class="meta-badge revenue">Side income (ads)</span>
+        <span class="meta-badge time">1-2 weeks</span>
+        <span class="meta-badge tech">Steam API + Claude API</span>
+      </div>
+      <div class="expand-hint">&#9662; Click for details</div>
+      <div class="card-body">
+        <h4>Features</h4>
+        <ul>
+          <li>Pull entire game library, playtime per game, achievements</li>
+          <li>"Shame shelf" &mdash; games owned but never played (sorted by price paid)</li>
+          <li>Achievement rarity tracker &mdash; how rare are your completions vs global stats</li>
+          <li>AI recommender: "Based on your 200 hours in BG3 and 150 in TW:WH3, try Divinity: Original Sin 2"</li>
+          <li>Friend comparison: "You and [friend] both own 47 games &mdash; here's what only you've played"</li>
+        </ul>
+        <h4>Why It's a Great First Project</h4>
+        <ul>
+          <li>Steam API is the easiest gaming API &mdash; instant key, simple REST endpoints</li>
+          <li>He builds something he immediately uses on his own account</li>
+          <li>Natural conversation starter: "check out what this tool says about your Steam library"</li>
+          <li>Portfolio piece that demonstrates API integration + AI</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Project 6: Overwolf Overlay -->
+    <div class="project-card" style="--accent:var(--orange)" onclick="this.classList.toggle('open')">
+      <div class="card-top">
+        <h3>Overwolf In-Game Overlay App</h3>
+        <div class="card-desc">Build an in-game overlay using HTML/CSS/JS. Overwolf handles distribution and monetization. They paid out $300M+ to creators in 2024.</div>
+      </div>
+      <div class="card-meta">
+        <span class="meta-badge difficulty">Intermediate</span>
+        <span class="meta-badge revenue">$500-5,000/mo potential</span>
+        <span class="meta-badge time">2-4 months</span>
+        <span class="meta-badge tech">HTML/CSS/JS + Overwolf SDK</span>
+      </div>
+      <div class="expand-hint">&#9662; Click for details</div>
+      <div class="card-body">
+        <h4>What Overwolf Is</h4>
+        <ul>
+          <li>A platform specifically for in-game overlay apps &mdash; like browser extensions but for games</li>
+          <li>You build with web tech (HTML, CSS, JavaScript) &mdash; no game engine needed</li>
+          <li>They handle app store distribution, auto-updates, and ad monetization</li>
+          <li>Revenue share: 70-80% to you. Tracker.gg is built on this platform.</li>
+        </ul>
+        <h4>Overlay Ideas for His Games</h4>
+        <ul>
+          <li><strong>Total War: Warhammer</strong> &mdash; unit counter-picker overlay during army selection</li>
+          <li><strong>BG3-adjacent</strong> &mdash; D&amp;D spell reference overlay for tabletop sessions streamed on Discord</li>
+          <li><strong>General</strong> &mdash; AI gaming assistant overlay that answers questions about any game in real-time</li>
+        </ul>
+        <h4>The Revenue Math</h4>
+        <ul>
+          <li>Overwolf apps earn primarily through in-app ads (displayed between game sessions)</li>
+          <li>Average eCPM: $5-15 depending on region and game</li>
+          <li>10,000 daily active users x $8 eCPM = ~$2,400/month</li>
+          <li>This is the most accessible path to serious passive income for a solo dev</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- LEARNING ROADMAP -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="section-header"><span class="num">3</span> Recommended Learning Path</div>
+
+  <div class="roadmap">
+    <div class="roadmap-item" style="--accent:var(--teal)">
+      <div class="rm-time">Week 1-2 &mdash; Learn by Building</div>
+      <h4>Steam Library Analyzer</h4>
+      <p>Pull his own game data from Steam API. Build a simple web page that shows playtime stats, unplayed games, and a "what to play next" AI recommendation. He uses Claude Code CLI to write the entire thing &mdash; learns by doing, not by reading tutorials.</p>
+      <div class="learns"><span>API basics</span><span>Claude Code workflow</span><span>JSON handling</span><span>HTML/CSS</span></div>
+    </div>
+    <div class="roadmap-item" style="--accent:var(--blue)">
+      <div class="rm-time">Week 2-3 &mdash; First Real Tool</div>
+      <h4>Discord Bot for His Friend Group</h4>
+      <p>Build a bot his friends actually use. Start with /stats commands that pull Steam data, then add a /build command powered by Claude API for BG3 character advice. Deploy on Railway free tier.</p>
+      <div class="learns"><span>Discord.js</span><span>Claude API</span><span>Slash commands</span><span>Deployment</span></div>
+    </div>
+    <div class="roadmap-item" style="--accent:var(--purple)">
+      <div class="rm-time">Month 2 &mdash; First Monetizable Project</div>
+      <h4>BG3 Build Optimizer (Web App)</h4>
+      <p>Turn the Discord bot's /build command into a full web app. Add a database to save builds, a sharing system, and a premium tier. Post to r/BaldursGate3 for initial traction.</p>
+      <div class="learns"><span>Web dev</span><span>Database</span><span>Auth/payments</span><span>User feedback</span></div>
+    </div>
+    <div class="roadmap-item" style="--accent:var(--gold)">
+      <div class="rm-time">Month 3-6 &mdash; Scale or Pivot</div>
+      <h4>Choose Your Path</h4>
+      <p>Based on what worked: scale the build optimizer to more games (Cyberpunk, Dragon Age), build an Overwolf overlay, or pivot to the RPG Save Storyteller if the viral angle is more exciting. By this point he has real skills and a portfolio.</p>
+      <div class="learns"><span>Product thinking</span><span>Growth</span><span>Monetization</span><span>Portfolio</span></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- REVENUE POTENTIAL -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="section-header"><span class="num">4</span> Revenue Potential (12-Month View)</div>
+
+  <div class="revenue-grid">
+    <div class="revenue-card" style="--accent:var(--blue)">
+      <div class="rev-type">Discord Bot (Premium)</div>
+      <div class="rev-amount">$2,000</div>
+      <div class="rev-desc">10,000 servers<br>5% conversion at $3/mo</div>
+      <div class="rev-bar"><div class="rev-bar-fill" style="width:40%;background:var(--blue)"></div></div>
+    </div>
+    <div class="revenue-card" style="--accent:var(--purple)">
+      <div class="rev-type">Build Optimizer SaaS</div>
+      <div class="rev-amount">$2,000</div>
+      <div class="rev-desc">400 subscribers<br>$5/month each</div>
+      <div class="rev-bar"><div class="rev-bar-fill" style="width:40%;background:var(--purple)"></div></div>
+    </div>
+    <div class="revenue-card" style="--accent:var(--orange)">
+      <div class="rev-type">Overwolf Overlay</div>
+      <div class="rev-amount">$5,000</div>
+      <div class="rev-desc">10K daily users<br>ad revenue share</div>
+      <div class="rev-bar"><div class="rev-bar-fill" style="width:100%;background:var(--orange)"></div></div>
+    </div>
+    <div class="revenue-card" style="--accent:var(--green)">
+      <div class="rev-type">Roblox Game</div>
+      <div class="rev-amount">$100K+</div>
+      <div class="rev-desc">Top ceiling<br>if game hits</div>
+      <div class="rev-bar"><div class="rev-bar-fill" style="width:100%;background:var(--green)"></div></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- CLAUDE CODE ADVANTAGE -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="section-header"><span class="num">5</span> Why Claude Code Is the Cheat Code</div>
+
+  <div class="claude-box">
+    <h3>&#9889; What Claude Code CLI Changes for a Beginner</h3>
+    <div class="point">
+      <div class="point-num">1</div>
+      <p><strong>Describe what you want in plain English.</strong> "Build me a Discord bot that pulls my Steam stats and tells me which achievement is rarest." Claude writes the code.</p>
+    </div>
+    <div class="point">
+      <div class="point-num">2</div>
+      <p><strong>Claude handles the boring parts.</strong> API authentication, rate limiting, error handling, database setup, deployment config. He focuses on the game logic he already understands.</p>
+    </div>
+    <div class="point">
+      <div class="point-num">3</div>
+      <p><strong>Working bot in a single session.</strong> Not weeks of tutorials. Not "hello world." A real tool his friends use, built in one afternoon.</p>
+    </div>
+    <div class="point">
+      <div class="point-num">4</div>
+      <p><strong>Claude API becomes a building block.</strong> Every project above gets smarter with an AI layer. Build advisor? Claude API. Save file storyteller? Claude API. The AI isn't just the tool &mdash; it's the product.</p>
+    </div>
+    <div class="point">
+      <div class="point-num">5</div>
+      <p><strong>Strategy gamers already think in systems.</strong> Army compositions, build orders, resource management &mdash; that IS programming logic. Claude Code bridges the gap between game knowledge and code.</p>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  Gaming Dev Roadmap &mdash; Built with Claude Code CLI &mdash; February 2026
+</footer>
+
+<script>
+// Animate revenue bars on scroll
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting){
+      entry.target.querySelectorAll('.rev-bar-fill').forEach(bar => {
+        const w = bar.style.width;
+        bar.style.width = '0';
+        setTimeout(() => bar.style.width = w, 100);
+      });
+    }
+  });
+}, {threshold: 0.3});
+
+document.querySelectorAll('.revenue-grid').forEach(el => observer.observe(el));
+
+// Animate sections on scroll
+const fadeObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting){
+      entry.target.classList.add('animate-in');
+    }
+  });
+}, {threshold: 0.1});
+
+document.querySelectorAll('.project-card, .roadmap-item, .genre-card').forEach(el => {
+  fadeObserver.observe(el);
+});
+</script>
+
+</body>
+</html>

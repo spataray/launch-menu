@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YouTube Content Factory - Orchestration Architecture</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#1a1a2e;--bg2:#16213e;--bg3:#0f3460;
+    --text:#e0e0e0;--text-dim:#8892a4;--text-bright:#ffffff;
+    --gold:#ffd700;--gold-dim:#b8960f;
+    --green:#00c853;--blue:#2979ff;--red:#c62828;
+    --orange:#ff9100;--purple:#aa00ff;--teal:#00bfa5;
+    --indigo:#536dfe;
+    --sonnet:#ff6f61;--haiku:#64ffda;
+    --line-color:rgba(255,255,255,0.12);
+    --card-bg:rgba(255,255,255,0.05);
+    --card-border:rgba(255,255,255,0.08);
+    --glow:0 0 20px rgba(255,215,0,0.3);
+  }
+  html{font-size:14px}
+  body{
+    background:var(--bg);color:var(--text);
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    min-height:100vh;overflow-x:hidden;
+    display:flex;flex-direction:column;align-items:center;
+  }
+
+  /* ── Header ── */
+  header{
+    text-align:center;padding:2rem 1rem 1rem;width:100%;
+    background:linear-gradient(180deg,rgba(15,52,96,.6) 0%,transparent 100%);
+  }
+  header h1{
+    font-size:1.8rem;font-weight:700;letter-spacing:.15em;
+    color:var(--gold);text-transform:uppercase;
+    text-shadow:0 0 30px rgba(255,215,0,.25);
+  }
+  header p{color:var(--text-dim);font-size:.95rem;margin-top:.4rem;letter-spacing:.05em}
+
+  /* ── Main canvas area ── */
+  .diagram-wrap{
+    position:relative;width:100%;max-width:1400px;
+    padding:1rem 1rem 2rem;flex:1;
+  }
+  svg.connections{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
+
+  /* ── Orchestrator ── */
+  .orchestrator{
+    position:relative;z-index:2;
+    display:flex;justify-content:center;margin-bottom:1rem;
+  }
+  .orchestrator .node{
+    background:linear-gradient(135deg,rgba(255,215,0,.15),rgba(255,215,0,.05));
+    border:2px solid var(--gold);border-radius:14px;
+    padding:1.1rem 2.5rem;text-align:center;cursor:default;
+    box-shadow:var(--glow);transition:all .3s ease;
+  }
+  .orchestrator .node:hover{
+    box-shadow:0 0 40px rgba(255,215,0,.5);transform:translateY(-2px);
+  }
+  .orchestrator .node h2{
+    font-size:1.25rem;color:var(--gold);font-weight:700;margin-bottom:.2rem;
+  }
+  .orchestrator .node span{
+    font-size:.8rem;color:var(--text-dim);letter-spacing:.04em;
+  }
+
+  /* ── Channel row ── */
+  .channels{
+    position:relative;z-index:2;
+    display:flex;flex-wrap:wrap;justify-content:center;
+    gap:.75rem;margin-bottom:1.5rem;
+  }
+  .channel-card{
+    width:155px;border-radius:10px;padding:.8rem .7rem;
+    background:var(--card-bg);border:1.5px solid var(--card-border);
+    cursor:pointer;transition:all .35s ease;text-align:center;
+    position:relative;overflow:hidden;
+  }
+  .channel-card::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:3px;
+    background:var(--accent);border-radius:10px 10px 0 0;
+  }
+  .channel-card:hover,.channel-card.active{
+    transform:translateY(-4px);
+    border-color:var(--accent);
+    box-shadow:0 4px 25px color-mix(in srgb,var(--accent) 30%,transparent);
+  }
+  .channel-card h3{font-size:1rem;font-weight:700;color:var(--accent);margin-bottom:.15rem}
+  .channel-card .full-name{font-size:.7rem;color:var(--text-dim);line-height:1.2}
+  .channel-card .badge{
+    display:inline-block;margin-top:.4rem;font-size:.6rem;
+    padding:.15rem .45rem;border-radius:4px;
+    background:color-mix(in srgb,var(--accent) 15%,transparent);
+    color:var(--accent);font-weight:600;letter-spacing:.03em;
+  }
+
+  /* ── Pipeline area ── */
+  .pipeline-section{
+    position:relative;z-index:2;
+    background:var(--card-bg);border:1px solid var(--card-border);
+    border-radius:14px;padding:1.5rem;margin-bottom:1.5rem;
+    min-height:220px;transition:all .4s ease;
+  }
+  .pipeline-section h3{
+    font-size:.95rem;color:var(--text-dim);margin-bottom:1rem;
+    text-transform:uppercase;letter-spacing:.1em;font-weight:600;
+    display:flex;align-items:center;gap:.5rem;
+  }
+  .pipeline-section h3 .dot{
+    width:10px;height:10px;border-radius:50%;display:inline-block;
+  }
+
+  .pipeline-flow{
+    display:flex;flex-wrap:wrap;align-items:flex-start;
+    gap:.5rem;justify-content:center;
+  }
+  .step{
+    display:flex;flex-direction:column;align-items:center;
+    width:120px;position:relative;
+  }
+  .step .step-box{
+    width:110px;border-radius:8px;padding:.6rem .4rem;
+    text-align:center;border:1.5px solid transparent;
+    transition:all .3s ease;position:relative;
+  }
+  .step .step-box.sonnet{
+    background:rgba(255,111,97,.1);border-color:rgba(255,111,97,.3);
+  }
+  .step .step-box.haiku{
+    background:rgba(100,255,218,.1);border-color:rgba(100,255,218,.3);
+  }
+  .step .step-box.active-step{
+    animation:stepPulse 1s ease-in-out;
+  }
+  @keyframes stepPulse{
+    0%{transform:scale(1)}
+    50%{transform:scale(1.08)}
+    100%{transform:scale(1)}
+  }
+  .step .step-num{
+    font-size:.6rem;color:var(--text-dim);margin-bottom:.15rem;
+    text-transform:uppercase;letter-spacing:.05em;
+  }
+  .step .step-name{
+    font-size:.8rem;font-weight:600;color:var(--text-bright);
+  }
+  .step .step-model{
+    font-size:.6rem;margin-top:.2rem;font-weight:600;
+    letter-spacing:.03em;
+  }
+  .step .step-model.sonnet-label{color:var(--sonnet)}
+  .step .step-model.haiku-label{color:var(--haiku)}
+
+  .step-arrow{
+    display:flex;align-items:center;align-self:center;
+    color:var(--text-dim);font-size:1.1rem;margin-top:.3rem;
+  }
+
+  /* ── Feedback loops ── */
+  .loop-indicators{
+    margin-top:1rem;display:flex;flex-wrap:wrap;gap:.8rem;
+    justify-content:center;
+  }
+  .loop-badge{
+    font-size:.7rem;padding:.3rem .7rem;border-radius:6px;
+    background:rgba(255,111,97,.08);border:1px solid rgba(255,111,97,.2);
+    color:var(--sonnet);display:flex;align-items:center;gap:.3rem;
+  }
+  .loop-badge .arrow-loop{font-size:.85rem}
+
+  /* ── Bottom info panel ── */
+  .info-panel{
+    position:relative;z-index:2;
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:1rem;width:100%;max-width:1400px;padding:0 1rem 2rem;
+  }
+  .info-card{
+    background:var(--card-bg);border:1px solid var(--card-border);
+    border-radius:10px;padding:1.1rem;
+  }
+  .info-card h4{
+    font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;
+    color:var(--gold);margin-bottom:.7rem;font-weight:600;
+  }
+  .info-card ul{list-style:none}
+  .info-card li{
+    font-size:.78rem;color:var(--text-dim);padding:.25rem 0;
+    display:flex;align-items:center;gap:.4rem;
+  }
+  .info-card li .icon{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+  .info-card code{
+    font-family:'Cascadia Code','Fira Code',monospace;font-size:.72rem;
+    background:rgba(255,255,255,.06);padding:.1rem .35rem;border-radius:3px;
+    color:var(--text);
+  }
+
+  /* ── Legend ── */
+  .legend{
+    display:flex;flex-wrap:wrap;gap:1.2rem;justify-content:center;
+    padding:.8rem 1rem;margin-bottom:.5rem;
+  }
+  .legend-item{
+    display:flex;align-items:center;gap:.4rem;font-size:.75rem;color:var(--text-dim);
+  }
+  .legend-swatch{
+    width:14px;height:14px;border-radius:3px;border:1px solid rgba(255,255,255,.15);
+  }
+
+  /* ── Simulate button ── */
+  .sim-btn{
+    position:relative;z-index:3;
+    display:inline-flex;align-items:center;gap:.5rem;
+    background:linear-gradient(135deg,rgba(255,215,0,.15),rgba(255,215,0,.05));
+    border:1.5px solid var(--gold);color:var(--gold);
+    padding:.6rem 1.5rem;border-radius:8px;font-size:.85rem;
+    font-weight:600;cursor:pointer;transition:all .3s ease;
+    letter-spacing:.04em;margin-bottom:1rem;
+  }
+  .sim-btn:hover{
+    background:linear-gradient(135deg,rgba(255,215,0,.25),rgba(255,215,0,.1));
+    box-shadow:0 0 25px rgba(255,215,0,.3);
+  }
+  .sim-btn:disabled{opacity:.5;cursor:not-allowed}
+  .sim-btn .spinner{
+    width:14px;height:14px;border:2px solid transparent;
+    border-top-color:var(--gold);border-radius:50%;
+    animation:spin .8s linear infinite;display:none;
+  }
+  .sim-btn.running .spinner{display:block}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ── Tooltip ── */
+  .tooltip{
+    position:fixed;z-index:100;
+    background:#1e1e3a;border:1px solid rgba(255,255,255,.15);
+    border-radius:8px;padding:.7rem 1rem;
+    font-size:.75rem;color:var(--text);
+    max-width:260px;pointer-events:none;
+    box-shadow:0 8px 30px rgba(0,0,0,.5);
+    opacity:0;transition:opacity .2s ease;
+    line-height:1.5;
+  }
+  .tooltip.show{opacity:1}
+  .tooltip strong{color:var(--text-bright);display:block;margin-bottom:.25rem}
+
+  /* ── SVG animated lines ── */
+  .conn-line{
+    stroke:var(--line-color);stroke-width:1.5;fill:none;
+    stroke-dasharray:6 4;
+  }
+  .conn-line.active{
+    stroke:var(--accent,var(--gold));stroke-width:2;
+    stroke-dasharray:6 4;
+    animation:dashFlow 1s linear infinite;
+  }
+  @keyframes dashFlow{to{stroke-dashoffset:-20}}
+
+  /* ── Flowing particles on SVG paths ── */
+  .flow-dot{
+    fill:var(--gold);r:3;opacity:.8;
+  }
+  .flow-dot.active{
+    animation:dotPulse 1.5s ease-in-out infinite;
+  }
+  @keyframes dotPulse{
+    0%,100%{opacity:.4;r:2.5}
+    50%{opacity:1;r:3.5}
+  }
+
+  /* ── Responsive ── */
+  @media(max-width:900px){
+    .channels{gap:.5rem}
+    .channel-card{width:130px;padding:.6rem .5rem}
+    .step{width:100px}
+    .step .step-box{width:95px}
+  }
+  @media(max-width:600px){
+    header h1{font-size:1.2rem}
+    .channel-card{width:110px}
+    .step{width:85px}
+    .step .step-box{width:80px;padding:.5rem .3rem}
+    .step .step-name{font-size:.7rem}
+  }
+
+  /* ── Status bar for simulation ── */
+  .status-bar{
+    position:relative;z-index:2;
+    width:100%;max-width:1400px;padding:0 1rem;
+    margin-bottom:.5rem;min-height:1.8rem;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .status-text{
+    font-size:.8rem;color:var(--gold);font-weight:500;
+    letter-spacing:.03em;opacity:0;transition:opacity .3s ease;
+  }
+  .status-text.show{opacity:1}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>YouTube Content Factory</h1>
+  <p>Parallel Agent Orchestration Architecture</p>
+</header>
+
+<!-- Legend -->
+<div class="legend">
+  <div class="legend-item">
+    <div class="legend-swatch" style="background:var(--sonnet)"></div>
+    Claude Sonnet (Generation/Review)
+  </div>
+  <div class="legend-item">
+    <div class="legend-swatch" style="background:var(--haiku)"></div>
+    Claude Haiku (Validation/QA)
+  </div>
+  <div class="legend-item">
+    <div class="legend-swatch" style="background:var(--gold)"></div>
+    Master Orchestrator
+  </div>
+  <div class="legend-item">
+    <div class="legend-swatch" style="background:rgba(255,255,255,.15)"></div>
+    Data Flow
+  </div>
+</div>
+
+<button class="sim-btn" id="simBtn" onclick="simulateRun()">
+  <div class="spinner"></div>
+  <span>Simulate Parallel Run</span>
+</button>
+
+<div class="status-bar"><span class="status-text" id="statusText"></span></div>
+
+<div class="diagram-wrap" id="diagramWrap">
+  <svg class="connections" id="svgConnections"></svg>
+
+  <!-- Orchestrator -->
+  <div class="orchestrator" id="orchestratorRow">
+    <div class="node" id="orchestratorNode"
+         data-tooltip="Master Orchestrator dispatches all channel agents in parallel. Reads master-orchestrator.md for configuration. Monitors for 3 consecutive failures = STOP.">
+      <h2>Master Orchestrator</h2>
+      <span>Claude Sonnet &nbsp;|&nbsp; Parallel Swarm Dispatch</span>
+    </div>
+  </div>
+
+  <!-- Channels -->
+  <div class="channels" id="channelRow">
+    <div class="channel-card" style="--accent:var(--green)" data-channel="EEC" data-pipeline="standard"
+         data-tooltip="Easy English Conversations: Beginner-friendly English dialogue practice. Standard 6-step pipeline. ~$1.50-2.50 per script.">
+      <h3>EEC</h3>
+      <div class="full-name">Easy English Conversations</div>
+      <div class="badge">Standard Pipeline</div>
+    </div>
+    <div class="channel-card" style="--accent:var(--blue)" data-channel="EFF" data-pipeline="standard"
+         data-tooltip="English Fluency Fast: Pronunciation & fluency training. Standard 6-step pipeline. 107-120 line target.">
+      <h3>EFF</h3>
+      <div class="full-name">English Fluency Fast</div>
+      <div class="badge">Standard Pipeline</div>
+    </div>
+    <div class="channel-card" style="--accent:var(--red)" data-channel="UAF" data-pipeline="uaf"
+         data-tooltip="Untold Asian Folklore: Horror/supernatural stories. SPECIAL 7-step pipeline with Humanization pass. Extra Sonnet call for natural language.">
+      <h3>UAF</h3>
+      <div class="full-name">Untold Asian Folklore</div>
+      <div class="badge" style="background:rgba(198,40,40,.2);color:var(--red)">Special Pipeline</div>
+    </div>
+    <div class="channel-card" style="--accent:var(--orange)" data-channel="BEC" data-pipeline="standard"
+         data-tooltip="Business Execution Central: Business motivation & strategy. Standard 6-step pipeline. 5-item scripts: 94% pass rate. 7-item: 42%.">
+      <h3>BEC</h3>
+      <div class="full-name">Business Execution Central</div>
+      <div class="badge">Standard Pipeline</div>
+    </div>
+    <div class="channel-card" style="--accent:var(--purple)" data-channel="TSP" data-pipeline="standard"
+         data-tooltip="The Stoic Path: Dark psychology & Stoicism content. Standard 6-step pipeline. Longest-running channel.">
+      <h3>TSP</h3>
+      <div class="full-name">The Stoic Path</div>
+      <div class="badge">Standard Pipeline</div>
+    </div>
+    <div class="channel-card" style="--accent:var(--teal)" data-channel="KN" data-pipeline="standard"
+         data-tooltip="Karma Narratives: Karma & life lesson stories. Standard 6-step pipeline. Narrative-driven scripts.">
+      <h3>KN</h3>
+      <div class="full-name">Karma Narratives</div>
+      <div class="badge">Standard Pipeline</div>
+    </div>
+    <div class="channel-card" style="--accent:var(--indigo)" data-channel="DKT" data-pipeline="standard"
+         data-tooltip="The Docket: Legal & court drama stories. Standard 6-step pipeline. Case-based narratives.">
+      <h3>DKT</h3>
+      <div class="full-name">The Docket</div>
+      <div class="badge">Standard Pipeline</div>
+    </div>
+  </div>
+
+  <!-- Pipeline display (standard) -->
+  <div class="pipeline-section" id="pipelineStandard">
+    <h3><span class="dot" style="background:var(--text-dim)" id="pipelineDot"></span> <span id="pipelineTitle">Standard Pipeline (All Channels)</span></h3>
+    <div class="pipeline-flow" id="pipelineFlow">
+      <!-- Filled by JS -->
+    </div>
+    <div class="loop-indicators">
+      <div class="loop-badge"><span class="arrow-loop">&#x21A9;</span> Length FAIL &rarr; Regenerate (trim)</div>
+      <div class="loop-badge"><span class="arrow-loop">&#x21A9;</span> Review FAIL &rarr; Fix (max 3x)</div>
+      <div class="loop-badge"><span class="arrow-loop">&#x21A9;</span> QA FAIL &rarr; Fix (max 2x)</div>
+    </div>
+  </div>
+</div>
+
+<!-- Info panels -->
+<div class="info-panel">
+  <div class="info-card">
+    <h4>Shared Resources</h4>
+    <ul>
+      <li><span class="icon" style="background:var(--gold)"></span><code>logs/execution-log.txt</code> &mdash; Run history</li>
+      <li><span class="icon" style="background:var(--sonnet)"></span><code>logs/errors.log</code> &mdash; Pipeline errors</li>
+      <li><span class="icon" style="background:var(--haiku)"></span><code>logs/api-costs.log</code> &mdash; Token &amp; cost tracking</li>
+      <li><span class="icon" style="background:var(--purple)"></span><code>logs/qa-failures.log</code> &mdash; QA rejection log</li>
+    </ul>
+  </div>
+  <div class="info-card">
+    <h4>Error Handling Rules</h4>
+    <ul>
+      <li><span class="icon" style="background:var(--sonnet)"></span>3 consecutive failures &rarr; <strong style="color:var(--sonnet)">STOP pipeline</strong></li>
+      <li><span class="icon" style="background:var(--orange)"></span>Script fails review 3x &rarr; Save as NEEDS-REVIEW</li>
+      <li><span class="icon" style="background:var(--teal)"></span>QA fails 2x &rarr; Save as NEEDS-MANUAL-REVIEW</li>
+      <li><span class="icon" style="background:var(--blue)"></span>API rate limit &rarr; Wait 60s, retry once</li>
+      <li><span class="icon" style="background:var(--text-dim)"></span>Token exhaustion &rarr; Save progress, stop gracefully</li>
+    </ul>
+  </div>
+  <div class="info-card">
+    <h4>Cost Estimates</h4>
+    <ul>
+      <li><span class="icon" style="background:var(--sonnet)"></span>Generation (Sonnet): ~$0.80</li>
+      <li><span class="icon" style="background:var(--haiku)"></span>Length Check (Haiku): ~$0.01</li>
+      <li><span class="icon" style="background:var(--sonnet)"></span>Detailed Review (Sonnet): ~$0.50</li>
+      <li><span class="icon" style="background:var(--haiku)"></span>QA Validate (Haiku): ~$0.02</li>
+      <li><span class="icon" style="background:var(--haiku)"></span>Confirm (Haiku): ~$0.02</li>
+      <li><span class="icon" style="background:var(--gold)"></span><strong style="color:var(--gold)">Total per A+ script: $1.50 - $2.50</strong></li>
+    </ul>
+  </div>
+  <div class="info-card">
+    <h4>Line Budget (Pictory ~4.5s/line)</h4>
+    <ul>
+      <li><span class="icon" style="background:var(--haiku)"></span>Target: 107-120 narration lines</li>
+      <li><span class="icon" style="background:var(--orange)"></span>Hard limit: 133 lines / 1,050 words</li>
+      <li><span class="icon" style="background:var(--sonnet)"></span>Target duration: 8-9 min (max 10 min)</li>
+      <li><span class="icon" style="background:var(--text-dim)"></span>2 scripts/batch safe | 3 max/session</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Tooltip -->
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+(function(){
+  // ── Pipeline step definitions ──
+  const standardSteps = [
+    {num:1,name:'Generate',model:'sonnet',tip:'Create script draft. Enforce 107-120 lines. Claude Sonnet for quality creative writing.'},
+    {num:2,name:'Length Check',model:'haiku',tip:'FAIL if >133 narration lines or >1,050 words. Early rejection saves ~$0.50. Claude Haiku (fast, cheap).'},
+    {num:3,name:'Review',model:'sonnet',tip:'10-dimension detailed review. Claude Sonnet for deep reasoning. FAIL loops to Fix.'},
+    {num:4,name:'Fix',model:'sonnet',tip:'Apply all review fixes. Save as next revision. Max 3 review-fix cycles.'},
+    {num:5,name:'QA Validate',model:'haiku',tip:'Binary validation checks. Catches reviewer hallucinations. Claude Haiku for speed.'},
+    {num:6,name:'Confirm + Save',model:'haiku',tip:'Fast PASS/FAIL confirmation. On PASS: save as A+ script. Claude Haiku.'}
+  ];
+  const uafSteps = [
+    {num:1,name:'Generate',model:'sonnet',tip:'Create folklore/horror script. Claude Sonnet for atmospheric writing.'},
+    {num:2,name:'Length Check',model:'haiku',tip:'FAIL if >133 lines. Early cheap check with Claude Haiku.'},
+    {num:3,name:'Review',model:'sonnet',tip:'10-dimension detailed review. FAIL loops to Fix (max 3x).'},
+    {num:4,name:'Fix',model:'sonnet',tip:'Apply review fixes. Iterate up to 3 cycles.'},
+    {num:5,name:'Humanize',model:'sonnet',tip:'UAF ONLY: Rewrite for natural, human-like language. Removes AI-sounding phrases. Claude Sonnet.'},
+    {num:6,name:'Human. QA',model:'haiku',tip:'UAF ONLY: Verify humanization quality. Check for remaining AI patterns. Claude Haiku.'},
+    {num:7,name:'QA + Save',model:'haiku',tip:'Final QA validation and save as A+ script. Claude Haiku.'}
+  ];
+
+  // ── Build pipeline HTML ──
+  function renderPipeline(steps, accent){
+    const flow = document.getElementById('pipelineFlow');
+    flow.innerHTML = '';
+    steps.forEach((s,i) => {
+      const step = document.createElement('div');
+      step.className = 'step';
+      step.setAttribute('data-step-idx', i);
+      step.innerHTML = `
+        <div class="step-box ${s.model}" data-tooltip="${s.tip}">
+          <div class="step-num">Step ${s.num}</div>
+          <div class="step-name">${s.name}</div>
+          <div class="step-model ${s.model}-label">${s.model.toUpperCase()}</div>
+        </div>
+      `;
+      flow.appendChild(step);
+      if(i < steps.length - 1){
+        const arrow = document.createElement('div');
+        arrow.className = 'step-arrow';
+        arrow.innerHTML = '&#x25B6;';
+        flow.appendChild(arrow);
+      }
+    });
+    // Add star at end
+    const star = document.createElement('div');
+    star.className = 'step';
+    star.innerHTML = `<div style="font-size:2rem;color:var(--gold);text-shadow:0 0 15px rgba(255,215,0,.5);margin-top:.2rem">&#9733;</div>
+      <div style="font-size:.7rem;color:var(--gold);font-weight:600;margin-top:.2rem">A+ PASS</div>`;
+    flow.appendChild(star);
+  }
+
+  // Initial render
+  renderPipeline(standardSteps);
+
+  // ── Channel interaction ──
+  const cards = document.querySelectorAll('.channel-card');
+  let activeChannel = null;
+
+  cards.forEach(card => {
+    card.addEventListener('click', () => {
+      const ch = card.dataset.channel;
+      const pipeline = card.dataset.pipeline;
+      const accent = getComputedStyle(card).getPropertyValue('--accent');
+
+      if(activeChannel === ch){
+        // Deselect
+        activeChannel = null;
+        card.classList.remove('active');
+        document.getElementById('pipelineTitle').textContent = 'Standard Pipeline (All Channels)';
+        document.getElementById('pipelineDot').style.background = 'var(--text-dim)';
+        renderPipeline(standardSteps);
+        drawConnections();
+        return;
+      }
+
+      cards.forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      activeChannel = ch;
+
+      const dot = document.getElementById('pipelineDot');
+      dot.style.background = accent;
+
+      if(pipeline === 'uaf'){
+        document.getElementById('pipelineTitle').textContent = `UAF Special Pipeline (7 Steps)`;
+        renderPipeline(uafSteps, accent);
+      } else {
+        document.getElementById('pipelineTitle').textContent = `${ch} Pipeline (Standard 6 Steps)`;
+        renderPipeline(standardSteps, accent);
+      }
+      drawConnections();
+    });
+  });
+
+  // ── SVG connection lines ──
+  const svg = document.getElementById('svgConnections');
+  const wrap = document.getElementById('diagramWrap');
+
+  function getCenter(el){
+    const r = el.getBoundingClientRect();
+    const wr = wrap.getBoundingClientRect();
+    return {
+      x: r.left + r.width/2 - wr.left,
+      y: r.top + r.height/2 - wr.top
+    };
+  }
+  function getBottom(el){
+    const r = el.getBoundingClientRect();
+    const wr = wrap.getBoundingClientRect();
+    return {
+      x: r.left + r.width/2 - wr.left,
+      y: r.bottom - wr.top
+    };
+  }
+  function getTop(el){
+    const r = el.getBoundingClientRect();
+    const wr = wrap.getBoundingClientRect();
+    return {
+      x: r.left + r.width/2 - wr.left,
+      y: r.top - wr.top
+    };
+  }
+
+  function drawConnections(){
+    const wr = wrap.getBoundingClientRect();
+    svg.setAttribute('width', wr.width);
+    svg.setAttribute('height', wr.height);
+    svg.innerHTML = '';
+
+    // Defs for animated gradients
+    const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+    svg.appendChild(defs);
+
+    const orch = document.getElementById('orchestratorNode');
+    const orchBottom = getBottom(orch);
+
+    // Lines from orchestrator to each channel
+    cards.forEach(card => {
+      const top = getTop(card);
+      const line = document.createElementNS('http://www.w3.org/2000/svg','path');
+      const midY = (orchBottom.y + top.y) / 2;
+      line.setAttribute('d', `M${orchBottom.x},${orchBottom.y} C${orchBottom.x},${midY} ${top.x},${midY} ${top.x},${top.y}`);
+      line.setAttribute('class', 'conn-line' + (card.classList.contains('active') ? ' active' : ''));
+      if(card.classList.contains('active')){
+        const accent = getComputedStyle(card).getPropertyValue('--accent').trim();
+        line.style.setProperty('--accent', accent);
+        line.style.stroke = accent;
+      }
+      svg.appendChild(line);
+
+      // Animated dot along path
+      const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      dot.setAttribute('class', 'flow-dot' + (card.classList.contains('active') ? ' active' : ''));
+      if(card.classList.contains('active')){
+        const accent = getComputedStyle(card).getPropertyValue('--accent').trim();
+        dot.style.fill = accent;
+      }
+      dot.setAttribute('r', '2.5');
+      svg.appendChild(dot);
+
+      // Animate dot along path
+      const anim = document.createElementNS('http://www.w3.org/2000/svg','animateMotion');
+      anim.setAttribute('dur', '2.5s');
+      anim.setAttribute('repeatCount', 'indefinite');
+      anim.setAttribute('path', line.getAttribute('d'));
+      dot.appendChild(anim);
+    });
+
+    // Lines from channels to pipeline section
+    const pipeSection = document.getElementById('pipelineStandard');
+    const pipeTop = getTop(pipeSection);
+    cards.forEach(card => {
+      const bottom = getBottom(card);
+      const line = document.createElementNS('http://www.w3.org/2000/svg','path');
+      const midY = (bottom.y + pipeTop.y) / 2;
+      line.setAttribute('d', `M${bottom.x},${bottom.y} C${bottom.x},${midY} ${pipeTop.x},${midY} ${pipeTop.x},${pipeTop.y}`);
+      line.setAttribute('class', 'conn-line' + (card.classList.contains('active') ? ' active' : ''));
+      if(card.classList.contains('active')){
+        const accent = getComputedStyle(card).getPropertyValue('--accent').trim();
+        line.style.setProperty('--accent', accent);
+        line.style.stroke = accent;
+      }
+      svg.appendChild(line);
+    });
+  }
+
+  // Draw on load + resize
+  drawConnections();
+  window.addEventListener('resize', drawConnections);
+
+  // Redraw after fonts load
+  if(document.fonts && document.fonts.ready){
+    document.fonts.ready.then(drawConnections);
+  }
+  setTimeout(drawConnections, 300);
+
+  // ── Tooltips ──
+  const tooltip = document.getElementById('tooltip');
+  let tooltipTimer = null;
+
+  document.addEventListener('mouseover', e => {
+    const target = e.target.closest('[data-tooltip]');
+    if(!target) return;
+    clearTimeout(tooltipTimer);
+    tooltip.innerHTML = target.dataset.tooltip;
+    tooltip.classList.add('show');
+    positionTooltip(e);
+  });
+  document.addEventListener('mousemove', e => {
+    if(tooltip.classList.contains('show')) positionTooltip(e);
+  });
+  document.addEventListener('mouseout', e => {
+    const target = e.target.closest('[data-tooltip]');
+    if(!target) return;
+    tooltipTimer = setTimeout(() => tooltip.classList.remove('show'), 100);
+  });
+
+  function positionTooltip(e){
+    let x = e.clientX + 15;
+    let y = e.clientY + 15;
+    if(x + 270 > window.innerWidth) x = e.clientX - 275;
+    if(y + 100 > window.innerHeight) y = e.clientY - 110;
+    tooltip.style.left = x + 'px';
+    tooltip.style.top = y + 'px';
+  }
+
+  // ── Simulate Run ──
+  window.simulateRun = async function(){
+    const btn = document.getElementById('simBtn');
+    if(btn.disabled) return;
+    btn.disabled = true;
+    btn.classList.add('running');
+
+    const statusEl = document.getElementById('statusText');
+    function setStatus(text){
+      statusEl.textContent = text;
+      statusEl.classList.add('show');
+    }
+
+    // Reset state
+    cards.forEach(c => c.classList.remove('active'));
+    activeChannel = null;
+    document.getElementById('pipelineTitle').textContent = 'Standard Pipeline (All Channels)';
+    document.getElementById('pipelineDot').style.background = 'var(--text-dim)';
+    renderPipeline(standardSteps);
+    drawConnections();
+
+    setStatus('Orchestrator initializing... Reading master-orchestrator.md');
+    await wait(1200);
+
+    // Flash orchestrator
+    const orchNode = document.getElementById('orchestratorNode');
+    orchNode.style.boxShadow = '0 0 50px rgba(255,215,0,.7)';
+    await wait(800);
+    orchNode.style.boxShadow = '';
+
+    setStatus('Dispatching 7 channel agents in parallel...');
+    await wait(1000);
+
+    // Activate all channels simultaneously with stagger
+    const channelOrder = ['EEC','EFF','UAF','BEC','TSP','KN','DKT'];
+    for(let i = 0; i < channelOrder.length; i++){
+      const card = document.querySelector(`[data-channel="${channelOrder[i]}"]`);
+      card.classList.add('active');
+      drawConnections();
+      await wait(200);
+    }
+
+    await wait(800);
+    setStatus('All channels running in parallel swarm...');
+    await wait(1500);
+
+    // Run pipeline steps for each channel
+    const steps = standardSteps;
+    for(let si = 0; si < steps.length; si++){
+      const step = steps[si];
+      setStatus(`Step ${step.num}: ${step.name} (${step.model.toUpperCase()}) across all channels...`);
+
+      // Highlight current step
+      const stepEls = document.querySelectorAll('.step[data-step-idx]');
+      stepEls.forEach(el => {
+        const box = el.querySelector('.step-box');
+        box.classList.remove('active-step');
+        box.style.boxShadow = '';
+      });
+      const currentStepEl = document.querySelector(`.step[data-step-idx="${si}"]`);
+      if(currentStepEl){
+        const box = currentStepEl.querySelector('.step-box');
+        box.classList.add('active-step');
+        const glowColor = step.model === 'sonnet' ? 'rgba(255,111,97,.4)' : 'rgba(100,255,218,.4)';
+        box.style.boxShadow = `0 0 20px ${glowColor}`;
+      }
+
+      await wait(2000);
+    }
+
+    // Clear step highlights
+    document.querySelectorAll('.step-box').forEach(b => {
+      b.classList.remove('active-step');
+      b.style.boxShadow = '';
+    });
+
+    setStatus('All 7 channels complete. Saving A+ scripts...');
+    await wait(1500);
+
+    // Flash gold on all channels
+    cards.forEach(card => {
+      card.style.borderColor = 'var(--gold)';
+      card.style.boxShadow = '0 0 25px rgba(255,215,0,.4)';
+    });
+    await wait(1200);
+
+    setStatus('Batch run complete. 14 scripts generated (2 per channel). Estimated cost: $21-35');
+    await wait(3000);
+
+    // Reset
+    cards.forEach(card => {
+      card.classList.remove('active');
+      card.style.borderColor = '';
+      card.style.boxShadow = '';
+    });
+    drawConnections();
+    await wait(1000);
+    statusEl.classList.remove('show');
+
+    btn.disabled = false;
+    btn.classList.remove('running');
+  };
+
+  function wait(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+})();
+</script>
+
+</body>
+</html>
