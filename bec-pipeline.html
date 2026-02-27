@@ -11,7 +11,7 @@
     --text:#e0e0e0;--text-dim:#8892a4;--text-bright:#ffffff;
     --gold:#ffd700;--gold-dim:#b8960f;
     --orange:#ff9100;--orange-dim:#cc7400;
-    --sonnet:#ff6f61;--haiku:#64ffda;
+    --sonnet:#ff6f61;--haiku:#64ffda;--gpt4o:#a78bfa;
     --line-color:rgba(255,255,255,0.12);
     --card-bg:rgba(255,255,255,0.05);
     --card-border:rgba(255,255,255,0.08);
@@ -79,12 +79,23 @@
   .pipeline-section{
     background:var(--card-bg);border:1px solid var(--card-border);
     border-radius:14px;padding:1.5rem;
-    transition:all .4s ease;
+    transition:all .4s ease;position:relative;
+  }
+  .pipeline-section svg.retry-arrows{
+    position:absolute;top:0;left:0;width:100%;pointer-events:none;z-index:1;
+    overflow:visible;
+  }
+  .retry-path{
+    fill:none;stroke:#f85149;stroke-width:1.8;stroke-dasharray:6 3;
+  }
+  .retry-label{
+    font-size:10px;fill:#f85149;font-family:'Segoe UI',system-ui,sans-serif;
   }
   .pipeline-flow{
     display:flex;flex-wrap:wrap;align-items:flex-start;
     gap:.4rem;justify-content:center;
-    padding:1rem 0;
+    padding:1rem 0 6rem;
+    position:relative;z-index:2;
   }
   .step{
     display:flex;flex-direction:column;align-items:center;
@@ -101,6 +112,9 @@
   .step .step-box.haiku{
     background:rgba(100,255,218,.1);border-color:rgba(100,255,218,.3);
   }
+  .step .step-box.gpt4o{
+    background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.3);
+  }
   .step:hover .step-box{transform:translateY(-3px)}
   .step:hover .step-box.sonnet{
     box-shadow:0 4px 20px rgba(255,111,97,.3);
@@ -109,6 +123,10 @@
   .step:hover .step-box.haiku{
     box-shadow:0 4px 20px rgba(100,255,218,.3);
     border-color:rgba(100,255,218,.6);
+  }
+  .step:hover .step-box.gpt4o{
+    box-shadow:0 4px 20px rgba(167,139,250,.3);
+    border-color:rgba(167,139,250,.6);
   }
   .step .step-box.active-step{
     animation:stepPulse 1s ease-in-out;
@@ -123,6 +141,10 @@
   .step .step-box.selected.haiku{
     box-shadow:0 4px 25px rgba(100,255,218,.5);
     border-color:var(--haiku);
+  }
+  .step .step-box.selected.gpt4o{
+    box-shadow:0 4px 25px rgba(167,139,250,.5);
+    border-color:var(--gpt4o);
   }
   @keyframes stepPulse{
     0%{transform:scale(1)}
@@ -145,6 +167,7 @@
   }
   .step .step-model.sonnet-label{color:var(--sonnet)}
   .step .step-model.haiku-label{color:var(--haiku)}
+  .step .step-model.gpt4o-label{color:var(--gpt4o)}
 
   .step-arrow{
     display:flex;align-items:center;align-self:center;
@@ -155,17 +178,7 @@
     align-self:center;margin-left:.3rem;
   }
 
-  /* Feedback loops */
-  .loop-indicators{
-    margin-top:1rem;display:flex;flex-wrap:wrap;gap:.8rem;
-    justify-content:center;
-  }
-  .loop-badge{
-    font-size:.7rem;padding:.3rem .7rem;border-radius:6px;
-    background:rgba(255,111,97,.08);border:1px solid rgba(255,111,97,.2);
-    color:var(--sonnet);display:flex;align-items:center;gap:.3rem;
-  }
-  .loop-badge .arrow-loop{font-size:.85rem}
+  /* (loop-indicators replaced by SVG retry arrows) */
 
   /* Step detail panel */
   .step-detail{
@@ -192,6 +205,9 @@
   }
   .step-detail h4 .model-badge.haiku-badge{
     background:rgba(100,255,218,.15);color:var(--haiku);
+  }
+  .step-detail h4 .model-badge.gpt4o-badge{
+    background:rgba(167,139,250,.15);color:var(--gpt4o);
   }
   .step-detail p{
     font-size:.8rem;color:var(--text-dim);line-height:1.6;margin-bottom:.5rem;
@@ -559,11 +575,11 @@
 
 <header>
   <h1>BEC Pipeline Architecture</h1>
-  <p class="subtitle">Business Execution Central &mdash; 7-Step Script Generation Pipeline</p>
+  <p class="subtitle">Business Execution Central &mdash; 7-Step Script Generation Pipeline (with GPT-4o External Eval)</p>
   <div class="header-tags">
     <span class="header-tag">107&ndash;120 Lines Target</span>
     <span class="header-tag">133 Hard Limit</span>
-    <span class="header-tag">Sonnet + Haiku</span>
+    <span class="header-tag">Sonnet + Haiku + GPT-4o</span>
     <span class="header-tag">10 Scripts/Day</span>
     <span class="header-tag">~$1.50&ndash;$2.50/Script</span>
   </div>
@@ -577,11 +593,19 @@
   </div>
   <div class="legend-item">
     <div class="legend-swatch" style="background:var(--haiku)"></div>
-    Claude Haiku (Validation/QA/Confirm)
+    Claude Haiku (Validation/QA)
+  </div>
+  <div class="legend-item">
+    <div class="legend-swatch" style="background:var(--gpt4o)"></div>
+    GPT-4o (External Eval)
   </div>
   <div class="legend-item">
     <div class="legend-swatch" style="background:var(--orange)"></div>
     BEC Accent
+  </div>
+  <div class="legend-item">
+    <div class="legend-swatch" style="background:#f85149;border-style:dashed"></div>
+    Error / Retry Loop
   </div>
 </div>
 
@@ -600,13 +624,15 @@
       <span class="dot" style="background:var(--orange)"></span>
       Pipeline Flow
     </div>
-    <div class="pipeline-section">
+    <div class="pipeline-section" id="pipelineSection">
+      <svg class="retry-arrows" id="retryArrows">
+        <defs>
+          <marker id="retryArrowHead" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#f85149"/>
+          </marker>
+        </defs>
+      </svg>
       <div class="pipeline-flow" id="pipelineFlow"></div>
-      <div class="loop-indicators">
-        <div class="loop-badge"><span class="arrow-loop">&#x21A9;</span> Length FAIL &rarr; Regenerate (trim &amp; retry once)</div>
-        <div class="loop-badge"><span class="arrow-loop">&#x21A9;</span> Review FAIL &rarr; Fix &rarr; Re-Review (max 3x)</div>
-        <div class="loop-badge"><span class="arrow-loop">&#x21A9;</span> QA FAIL &rarr; Fix (max 2x, then NEEDS-MANUAL-REVIEW)</div>
-      </div>
       <div class="step-detail" id="stepDetail"></div>
     </div>
   </section>
@@ -674,7 +700,7 @@
         <tr><td>Fix</td><td style="color:var(--sonnet)">Sonnet</td><td>~$0.50</td></tr>
         <tr><td>QA Humanize</td><td style="color:var(--haiku)">Haiku</td><td>~$0.02</td></tr>
         <tr><td>QA Validate</td><td style="color:var(--haiku)">Haiku</td><td>~$0.02</td></tr>
-        <tr><td>Confirm</td><td style="color:var(--haiku)">Haiku</td><td>~$0.02</td></tr>
+        <tr><td>External Eval</td><td style="color:var(--gpt4o)">GPT-4o</td><td>~$0.03</td></tr>
         <tr style="border-top:2px solid var(--line-color)">
           <td colspan="2" style="color:var(--gold);font-weight:600">Total per A+ Script</td>
           <td style="color:var(--gold);font-weight:600">$1.50&ndash;$2.50</td>
@@ -707,6 +733,8 @@
         <tr><td>Length FAIL</td><td>Return to Generator (trim)</td><td>1 retry</td></tr>
         <tr><td>Review FAIL</td><td>Fix &rarr; Re-Review</td><td>3 cycles</td></tr>
         <tr><td>QA FAIL</td><td>Fix &rarr; Re-QA</td><td>2 retries</td></tr>
+        <tr><td>Ext Eval FAIL</td><td>Fix &rarr; Re-Eval</td><td>1 retry</td></tr>
+        <tr><td>Ext Eval API err</td><td>Skip eval, save A+</td><td>&mdash;</td></tr>
         <tr><td>3 consecutive</td><td style="color:var(--danger)">STOP pipeline</td><td>&mdash;</td></tr>
         <tr><td>Unrecoverable</td><td>Save as NEEDS-REVIEW</td><td>&mdash;</td></tr>
         <tr><td>Rate limit</td><td>Wait 60s, retry once</td><td>1 retry</td></tr>
@@ -857,19 +885,21 @@
       }
     },
     {
-      num:7, name:'Confirm', model:'haiku', cost:'~$0.02',
-      tip:'Final PASS/FAIL gate. On PASS: save as A+ script. On FAIL: route back for manual review. Claude Haiku.',
+      num:7, name:'External Eval', model:'gpt4o', cost:'~$0.03',
+      tip:'GPT-4o cross-model review: 10 process compliance checks + 7 humanization checks. Final gate before A+ save. Advisory if API unavailable.',
       detail:{
-        title:'Final Confirmation',
-        desc:'Fast binary PASS/FAIL. If everything checks out, the script is saved as an A+ production-ready file.',
+        title:'External Evaluation (GPT-4o)',
+        desc:'Cross-model validation using OpenAI GPT-4o. Catches blind spots the Claude pipeline might miss. This is the final gate \u2014 on PASS, the script is saved as A+.',
         items:[
-          'Model: Claude Haiku (~$0.02)',
-          'Binary PASS/FAIL decision',
-          'On PASS: script saved as A+ to channel folder',
-          'On FAIL: saved as NEEDS-MANUAL-REVIEW.txt',
-          'Logs result to pipeline.log',
-          'Updates process day tracking',
-          'Triggers email delivery if configured'
+          'Model: GPT-4o via OpenAI API (~$0.01-0.03)',
+          'Process compliance: 10 criteria (line count, title, hook, stakes, list, CTA, closing, pinned comments, formatting, required terms)',
+          'Humanization: 7 criteria (AI-tells, repeated phrases, parallel structure, amplification beats, micro-stories, natural feel, overall score)',
+          'Reports exact narration line count and line numbers for required terms',
+          'On PASS: save as A+ script to channel folder',
+          'On FAIL: return to Fix step with GPT-4o feedback (max 1 retry)',
+          'On API error: skip eval, save A+ (Claude QA is primary gate)',
+          'Logs cost to logs/api-costs.log',
+          'Script: python3 scripts/openai-eval.py <file>'
         ]
       }
     }
@@ -908,7 +938,85 @@
     star.innerHTML = `<div style="font-size:2.2rem;color:var(--gold);text-shadow:0 0 15px rgba(255,215,0,.5)">&#9733;</div>
       <div style="font-size:.72rem;color:var(--gold);font-weight:600;margin-top:.1rem">A+ PASS</div>`;
     flow.appendChild(star);
+    // Draw retry arrows after DOM settles
+    requestAnimationFrame(() => requestAnimationFrame(drawRetryArrows));
   }
+
+  // ── Retry Arrows (SVG) ──
+  // Draws red dashed curved arrows below step boxes to show error routing
+  function drawRetryArrows(){
+    const svg = document.getElementById('retryArrows');
+    const section = document.getElementById('pipelineSection');
+    if(!svg || !section) return;
+
+    const sectionRect = section.getBoundingClientRect();
+
+    // Clear previous paths (keep defs)
+    svg.querySelectorAll('path.retry-path, text.retry-label').forEach(el => el.remove());
+    svg.setAttribute('height', sectionRect.height);
+
+    function getStepBox(idx){
+      const el = document.querySelector(`.step[data-step-idx="${idx}"] .step-box`);
+      if(!el) return null;
+      const r = el.getBoundingClientRect();
+      return {
+        cx: r.left + r.width/2 - sectionRect.left,
+        bottom: r.bottom - sectionRect.top,
+        top: r.top - sectionRect.top,
+        left: r.left - sectionRect.left,
+        right: r.right - sectionRect.left
+      };
+    }
+
+    // Define retry loops: [fromStepIdx, toStepIdx, label, verticalOffset]
+    const loops = [
+      [1, 0, 'FAIL (trim)', 18],
+      [3, 2, 'max 3 retries', 38],
+      [5, 3, 'QA FAIL (max 2)', 58],
+      [6, 3, 'Eval FAIL (1 retry)', 78]
+    ];
+
+    loops.forEach(([from, to, label, yOff]) => {
+      const fromBox = getStepBox(from);
+      const toBox = getStepBox(to);
+      if(!fromBox || !toBox) return;
+
+      const y1 = fromBox.bottom + 4;
+      const y2 = toBox.bottom + 4;
+      const yMid = Math.max(y1, y2) + yOff;
+
+      // Path: down from source, across, up to target
+      const d = `M ${fromBox.cx} ${y1} L ${fromBox.cx} ${yMid} L ${toBox.cx} ${yMid} L ${toBox.cx} ${y2}`;
+
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', d);
+      path.setAttribute('class', 'retry-path');
+      path.setAttribute('marker-end', 'url(#retryArrowHead)');
+      svg.appendChild(path);
+
+      // Label centered on horizontal segment
+      const labelX = (fromBox.cx + toBox.cx) / 2;
+      const labelY = yMid - 4;
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('x', labelX);
+      text.setAttribute('y', labelY);
+      text.setAttribute('class', 'retry-label');
+      text.setAttribute('text-anchor', 'middle');
+      text.textContent = label;
+      svg.appendChild(text);
+    });
+
+    // Resize SVG to fit all arrows
+    const allPaths = svg.querySelectorAll('path.retry-path');
+    let maxY = 0;
+    allPaths.forEach(p => {
+      const bbox = p.getBBox();
+      if(bbox.y + bbox.height > maxY) maxY = bbox.y + bbox.height;
+    });
+    if(maxY > 0) svg.setAttribute('height', maxY + 15);
+  }
+
+  window.addEventListener('resize', drawRetryArrows);
 
   function toggleStepDetail(idx){
     const panel = document.getElementById('stepDetail');
@@ -1277,7 +1385,7 @@
       const currentBox = document.querySelector(`.step[data-step-idx="${i}"] .step-box`);
       if(currentBox){
         currentBox.classList.add('active-step');
-        const glowColor = s.model === 'sonnet' ? 'rgba(255,111,97,.5)' : 'rgba(100,255,218,.5)';
+        const glowColor = s.model === 'sonnet' ? 'rgba(255,111,97,.5)' : s.model === 'gpt4o' ? 'rgba(167,139,250,.5)' : 'rgba(100,255,218,.5)';
         currentBox.style.boxShadow = `0 0 25px ${glowColor}`;
       }
 

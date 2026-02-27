@@ -365,11 +365,11 @@
       <div class="full-name">Untold Asian Folklore</div>
       <div class="badge" style="background:rgba(198,40,40,.2);color:var(--red)">Special Pipeline</div>
     </div>
-    <div class="channel-card" style="--accent:var(--orange)" data-channel="BEC" data-pipeline="standard"
-         data-tooltip="Business Execution Central: Business motivation &amp; strategy. Standard 6-step pipeline. 5-item scripts: 94% pass rate. 7-item: 42%. Enhanced with external AI review checks: emotional impact, AI detection, micro-stories, amplification variety, confrontational CTAs.">
+    <div class="channel-card" style="--accent:var(--orange)" data-channel="BEC" data-pipeline="bec"
+         data-tooltip="Business Execution Central: Business motivation &amp; strategy. 7-step pipeline with GPT-4o External Eval as final gate. 5-item scripts: 94% pass rate. 7-item: 42%. Cross-model review: process compliance + humanization check.">
       <h3>BEC</h3>
       <div class="full-name">Business Execution Central</div>
-      <div class="badge">Standard Pipeline</div>
+      <div class="badge" style="background:rgba(255,145,0,.2);color:var(--orange)">GPT-4o Eval Pipeline</div>
     </div>
     <div class="channel-card" style="--accent:var(--purple)" data-channel="TSP" data-pipeline="standard"
          data-tooltip="The Stoic Path: Dark psychology & Stoicism content. Standard 6-step pipeline. Longest-running channel.">
@@ -433,7 +433,7 @@
       <li><span class="icon" style="background:var(--haiku)"></span>Length Check (Haiku): ~$0.01</li>
       <li><span class="icon" style="background:var(--sonnet)"></span>Detailed Review (Sonnet): ~$0.50</li>
       <li><span class="icon" style="background:var(--haiku)"></span>QA Validate (Haiku): ~$0.02</li>
-      <li><span class="icon" style="background:var(--haiku)"></span>Confirm (Haiku): ~$0.02</li>
+      <li><span class="icon" style="background:var(--purple)"></span>External Eval (GPT-4o, BEC): ~$0.03</li>
       <li><span class="icon" style="background:var(--gold)"></span><strong style="color:var(--gold)">Total per A+ script: $1.50 - $2.50</strong></li>
     </ul>
   </div>
@@ -453,7 +453,7 @@
       <li><span class="icon" style="background:var(--haiku)"></span>AI detection &mdash; kill formulaic phrases, vary amplification beats (max 2)</li>
       <li><span class="icon" style="background:var(--orange)"></span>Closing CTA &mdash; confrontational tone, never generic &ldquo;subscribe and follow&rdquo;</li>
       <li><span class="icon" style="background:var(--purple)"></span>Pattern variety &mdash; break parallel structure, rotate phrasing across items</li>
-      <li><span class="icon" style="background:var(--gold)"></span><strong style="color:var(--gold)">Source: GPT-4o + Gemini 2.5 cross-review (Feb 2026)</strong></li>
+      <li><span class="icon" style="background:var(--gold)"></span><strong style="color:var(--gold)">GPT-4o External Eval now in BEC pipeline (Feb 2026)</strong></li>
     </ul>
   </div>
 </div>
@@ -471,6 +471,15 @@
     {num:4,name:'Fix',model:'sonnet',tip:'Apply all review fixes. Strengthen emotional impact, vary amplification phrases, sharpen closing CTA. Save as next revision. Max 3 review-fix cycles.'},
     {num:5,name:'QA Validate',model:'haiku',tip:'Binary checks: formatting, required elements, AI-tell phrase detection (kills repeated phrases, parallel structure, formulaic patterns). Claude Haiku.'},
     {num:6,name:'Confirm + Save',model:'haiku',tip:'Fast PASS/FAIL confirmation. On PASS: save as A+ script. Claude Haiku.'}
+  ];
+  const becSteps = [
+    {num:1,name:'Generate',model:'sonnet',tip:'Create BEC script draft. Enforce 107-120 lines. 1-2 micro-stories, max 2 amplification beats, confrontational CTA. Claude Sonnet.'},
+    {num:2,name:'Length Check',model:'haiku',tip:'FAIL if >133 narration lines or >1,050 words. Early rejection saves ~$0.50. Claude Haiku.'},
+    {num:3,name:'Review',model:'sonnet',tip:'12-dimension review including emotional impact, AI detection, amplification variety, micro-story presence. Claude Sonnet.'},
+    {num:4,name:'Fix',model:'sonnet',tip:'Apply review fixes. Strengthen micro-stories, vary amplification, sharpen CTA. Max 3 cycles.'},
+    {num:5,name:'QA Humanize',model:'haiku',tip:'AI-tell detection, repeated phrase check, parallel structure flag, amplification beat variety. Claude Haiku.'},
+    {num:6,name:'QA Validate',model:'haiku',tip:'Binary checks: formatting, required elements, structure, required terms (execution, standard, non-negotiable, discipline, uncomfortable, leverage). Claude Haiku.'},
+    {num:7,name:'External Eval',model:'sonnet',tip:'GPT-4o cross-model review: 10 process compliance + 7 humanization checks. Final gate before A+ save. Advisory if API unavailable. ~$0.03.'}
   ];
   const uafSteps = [
     {num:1,name:'Generate',model:'sonnet',tip:'Create folklore/horror script. Claude Sonnet for atmospheric writing.'},
@@ -547,6 +556,9 @@
       if(pipeline === 'uaf'){
         document.getElementById('pipelineTitle').textContent = `UAF Special Pipeline (7 Steps)`;
         renderPipeline(uafSteps, accent);
+      } else if(pipeline === 'bec'){
+        document.getElementById('pipelineTitle').textContent = `BEC Pipeline (7 Steps + GPT-4o Eval)`;
+        renderPipeline(becSteps, accent);
       } else {
         document.getElementById('pipelineTitle').textContent = `${ch} Pipeline (Standard 6 Steps)`;
         renderPipeline(standardSteps, accent);
