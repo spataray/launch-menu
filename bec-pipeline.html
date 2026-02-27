@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BEC Pipeline Architecture</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#1a1a2e;--bg2:#16213e;--bg3:#0f3460;
+    --text:#e0e0e0;--text-dim:#8892a4;--text-bright:#ffffff;
+    --gold:#ffd700;--gold-dim:#b8960f;
+    --orange:#ff9100;--orange-dim:#cc7400;
+    --sonnet:#ff6f61;--haiku:#64ffda;
+    --line-color:rgba(255,255,255,0.12);
+    --card-bg:rgba(255,255,255,0.05);
+    --card-border:rgba(255,255,255,0.08);
+    --glow:0 0 20px rgba(255,145,0,0.3);
+    --success:#00c853;--warning:#ff9100;--danger:#c62828;
+  }
+  html{font-size:14px;scroll-behavior:smooth}
+  body{
+    background:var(--bg);color:var(--text);
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    min-height:100vh;overflow-x:hidden;
+    display:flex;flex-direction:column;align-items:center;
+  }
+
+  /* ── Header ── */
+  header{
+    text-align:center;padding:2.5rem 1rem 1.5rem;width:100%;
+    background:linear-gradient(180deg,rgba(15,52,96,.6) 0%,transparent 100%);
+  }
+  header h1{
+    font-size:2rem;font-weight:700;letter-spacing:.15em;
+    color:var(--orange);text-transform:uppercase;
+    text-shadow:0 0 30px rgba(255,145,0,.25);
+  }
+  header p.subtitle{
+    color:var(--text-dim);font-size:1rem;margin-top:.4rem;letter-spacing:.05em;
+  }
+  .header-tags{
+    display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;margin-top:1rem;
+  }
+  .header-tag{
+    font-size:.75rem;padding:.3rem .8rem;border-radius:6px;
+    background:rgba(255,145,0,.1);border:1px solid rgba(255,145,0,.25);
+    color:var(--orange);font-weight:600;letter-spacing:.03em;
+  }
+
+  /* ── Section containers ── */
+  .content-wrap{
+    width:100%;max-width:1400px;padding:0 1rem;
+  }
+  section{margin-bottom:2rem}
+  .section-title{
+    font-size:1rem;color:var(--gold);margin-bottom:1rem;
+    text-transform:uppercase;letter-spacing:.1em;font-weight:600;
+    display:flex;align-items:center;gap:.5rem;
+    padding-bottom:.5rem;border-bottom:1px solid var(--line-color);
+  }
+  .section-title .dot{
+    width:10px;height:10px;border-radius:50%;display:inline-block;
+  }
+
+  /* ── Legend ── */
+  .legend{
+    display:flex;flex-wrap:wrap;gap:1.2rem;justify-content:center;
+    padding:.8rem 1rem;margin-bottom:.5rem;
+  }
+  .legend-item{
+    display:flex;align-items:center;gap:.4rem;font-size:.75rem;color:var(--text-dim);
+  }
+  .legend-swatch{
+    width:14px;height:14px;border-radius:3px;border:1px solid rgba(255,255,255,.15);
+  }
+
+  /* ── Pipeline Flow ── */
+  .pipeline-section{
+    background:var(--card-bg);border:1px solid var(--card-border);
+    border-radius:14px;padding:1.5rem;
+    transition:all .4s ease;
+  }
+  .pipeline-flow{
+    display:flex;flex-wrap:wrap;align-items:flex-start;
+    gap:.4rem;justify-content:center;
+    padding:1rem 0;
+  }
+  .step{
+    display:flex;flex-direction:column;align-items:center;
+    width:130px;position:relative;cursor:pointer;
+  }
+  .step .step-box{
+    width:120px;border-radius:8px;padding:.7rem .5rem;
+    text-align:center;border:1.5px solid transparent;
+    transition:all .3s ease;position:relative;
+  }
+  .step .step-box.sonnet{
+    background:rgba(255,111,97,.1);border-color:rgba(255,111,97,.3);
+  }
+  .step .step-box.haiku{
+    background:rgba(100,255,218,.1);border-color:rgba(100,255,218,.3);
+  }
+  .step:hover .step-box{transform:translateY(-3px)}
+  .step:hover .step-box.sonnet{
+    box-shadow:0 4px 20px rgba(255,111,97,.3);
+    border-color:rgba(255,111,97,.6);
+  }
+  .step:hover .step-box.haiku{
+    box-shadow:0 4px 20px rgba(100,255,218,.3);
+    border-color:rgba(100,255,218,.6);
+  }
+  .step .step-box.active-step{
+    animation:stepPulse 1s ease-in-out;
+  }
+  .step .step-box.selected{
+    transform:translateY(-3px);
+  }
+  .step .step-box.selected.sonnet{
+    box-shadow:0 4px 25px rgba(255,111,97,.5);
+    border-color:var(--sonnet);
+  }
+  .step .step-box.selected.haiku{
+    box-shadow:0 4px 25px rgba(100,255,218,.5);
+    border-color:var(--haiku);
+  }
+  @keyframes stepPulse{
+    0%{transform:scale(1)}
+    50%{transform:scale(1.08)}
+    100%{transform:scale(1)}
+  }
+  .step .step-num{
+    font-size:.6rem;color:var(--text-dim);margin-bottom:.15rem;
+    text-transform:uppercase;letter-spacing:.05em;
+  }
+  .step .step-name{
+    font-size:.82rem;font-weight:600;color:var(--text-bright);
+  }
+  .step .step-model{
+    font-size:.6rem;margin-top:.2rem;font-weight:600;
+    letter-spacing:.03em;
+  }
+  .step .step-cost{
+    font-size:.6rem;margin-top:.1rem;color:var(--text-dim);
+  }
+  .step .step-model.sonnet-label{color:var(--sonnet)}
+  .step .step-model.haiku-label{color:var(--haiku)}
+
+  .step-arrow{
+    display:flex;align-items:center;align-self:center;
+    color:var(--text-dim);font-size:1.1rem;margin-top:.3rem;
+  }
+  .step-star{
+    display:flex;flex-direction:column;align-items:center;
+    align-self:center;margin-left:.3rem;
+  }
+
+  /* Feedback loops */
+  .loop-indicators{
+    margin-top:1rem;display:flex;flex-wrap:wrap;gap:.8rem;
+    justify-content:center;
+  }
+  .loop-badge{
+    font-size:.7rem;padding:.3rem .7rem;border-radius:6px;
+    background:rgba(255,111,97,.08);border:1px solid rgba(255,111,97,.2);
+    color:var(--sonnet);display:flex;align-items:center;gap:.3rem;
+  }
+  .loop-badge .arrow-loop{font-size:.85rem}
+
+  /* Step detail panel */
+  .step-detail{
+    margin-top:1rem;padding:1rem 1.2rem;
+    background:rgba(255,255,255,.03);border:1px solid var(--card-border);
+    border-radius:10px;display:none;
+    animation:fadeSlide .3s ease;
+  }
+  .step-detail.visible{display:block}
+  @keyframes fadeSlide{
+    from{opacity:0;transform:translateY(-8px)}
+    to{opacity:1;transform:translateY(0)}
+  }
+  .step-detail h4{
+    font-size:.9rem;color:var(--text-bright);margin-bottom:.5rem;
+    display:flex;align-items:center;gap:.5rem;
+  }
+  .step-detail h4 .model-badge{
+    font-size:.65rem;padding:.15rem .45rem;border-radius:4px;
+    font-weight:600;letter-spacing:.03em;
+  }
+  .step-detail h4 .model-badge.sonnet-badge{
+    background:rgba(255,111,97,.15);color:var(--sonnet);
+  }
+  .step-detail h4 .model-badge.haiku-badge{
+    background:rgba(100,255,218,.15);color:var(--haiku);
+  }
+  .step-detail p{
+    font-size:.8rem;color:var(--text-dim);line-height:1.6;margin-bottom:.5rem;
+  }
+  .step-detail .detail-list{list-style:none}
+  .step-detail .detail-list li{
+    font-size:.78rem;color:var(--text-dim);padding:.2rem 0;
+    display:flex;align-items:flex-start;gap:.4rem;
+  }
+  .step-detail .detail-list li::before{
+    content:'';width:5px;height:5px;border-radius:50%;
+    background:var(--orange);flex-shrink:0;margin-top:.35rem;
+  }
+
+  /* ── Script Structure ── */
+  .structure-wrap{
+    background:var(--card-bg);border:1px solid var(--card-border);
+    border-radius:14px;padding:1.5rem;
+  }
+  .structure-bar{
+    display:flex;width:100%;height:60px;border-radius:8px;overflow:hidden;
+    margin-bottom:1rem;border:1px solid var(--card-border);
+  }
+  .structure-segment{
+    display:flex;align-items:center;justify-content:center;
+    flex-direction:column;cursor:pointer;transition:all .3s ease;
+    position:relative;border-right:1px solid rgba(0,0,0,.3);
+  }
+  .structure-segment:last-child{border-right:none}
+  .structure-segment:hover{filter:brightness(1.3)}
+  .structure-segment.selected{filter:brightness(1.5)}
+  .structure-segment .seg-label{
+    font-size:.7rem;font-weight:600;color:var(--text-bright);
+    text-shadow:0 1px 3px rgba(0,0,0,.5);
+  }
+  .structure-segment .seg-lines{
+    font-size:.6rem;color:rgba(255,255,255,.8);
+    text-shadow:0 1px 3px rgba(0,0,0,.5);
+  }
+
+  .structure-detail{
+    padding:1rem;background:rgba(255,255,255,.03);
+    border:1px solid var(--card-border);border-radius:10px;
+    display:none;animation:fadeSlide .3s ease;
+  }
+  .structure-detail.visible{display:block}
+  .structure-detail h4{
+    font-size:.9rem;color:var(--text-bright);margin-bottom:.5rem;
+  }
+  .structure-detail ul{list-style:none}
+  .structure-detail li{
+    font-size:.78rem;color:var(--text-dim);padding:.2rem 0;
+    display:flex;align-items:flex-start;gap:.4rem;
+  }
+  .structure-detail li::before{
+    content:'';width:5px;height:5px;border-radius:50%;
+    background:var(--orange);flex-shrink:0;margin-top:.35rem;
+  }
+
+  /* ── Quality Gates ── */
+  .quality-grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:1rem;
+  }
+  .quality-card{
+    background:var(--card-bg);border:1px solid var(--card-border);
+    border-radius:10px;padding:1.1rem;cursor:pointer;
+    transition:all .3s ease;position:relative;overflow:hidden;
+  }
+  .quality-card::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:3px;
+    border-radius:10px 10px 0 0;
+  }
+  .quality-card:hover{
+    transform:translateY(-3px);
+    border-color:rgba(255,145,0,.4);
+    box-shadow:0 4px 20px rgba(255,145,0,.15);
+  }
+  .quality-card h4{
+    font-size:.85rem;color:var(--orange);font-weight:600;
+    margin-bottom:.4rem;display:flex;align-items:center;gap:.4rem;
+  }
+  .quality-card .q-summary{
+    font-size:.78rem;color:var(--text-dim);line-height:1.5;
+  }
+  .quality-card .q-detail{
+    display:none;margin-top:.6rem;padding-top:.6rem;
+    border-top:1px solid var(--line-color);
+    animation:fadeSlide .3s ease;
+  }
+  .quality-card.expanded .q-detail{display:block}
+  .quality-card .q-detail ul{list-style:none}
+  .quality-card .q-detail li{
+    font-size:.75rem;color:var(--text-dim);padding:.2rem 0;
+    display:flex;align-items:flex-start;gap:.4rem;
+  }
+  .quality-card .q-detail li::before{
+    content:'';width:5px;height:5px;border-radius:50%;
+    flex-shrink:0;margin-top:.35rem;
+  }
+  .quality-card .q-detail .good li::before{background:var(--success)}
+  .quality-card .q-detail .bad li::before{background:var(--danger)}
+  .quality-card .q-detail .neutral li::before{background:var(--orange)}
+  .quality-card .q-detail h5{
+    font-size:.75rem;color:var(--text-bright);margin:.4rem 0 .2rem;
+    text-transform:uppercase;letter-spacing:.05em;
+  }
+  .quality-card .expand-hint{
+    font-size:.65rem;color:var(--text-dim);margin-top:.4rem;
+    opacity:.6;
+  }
+  .quality-card.expanded .expand-hint{display:none}
+
+  /* ── Pass Rate ── */
+  .passrate-section{
+    background:var(--card-bg);border:1px solid var(--card-border);
+    border-radius:14px;padding:1.5rem;
+  }
+  .passrate-row{
+    display:flex;align-items:center;gap:1rem;margin-bottom:1rem;
+    padding:.6rem 0;
+  }
+  .passrate-label{
+    width:100px;flex-shrink:0;
+  }
+  .passrate-label .pr-title{
+    font-size:.85rem;font-weight:600;color:var(--text-bright);
+  }
+  .passrate-label .pr-lines{
+    font-size:.68rem;color:var(--text-dim);
+  }
+  .passrate-bar-wrap{
+    flex:1;height:32px;background:rgba(255,255,255,.05);
+    border-radius:6px;overflow:hidden;position:relative;
+  }
+  .passrate-bar{
+    height:100%;border-radius:6px;display:flex;align-items:center;
+    padding-left:.8rem;transition:width 1.5s ease;width:0;
+  }
+  .passrate-bar span{
+    font-size:.75rem;font-weight:600;color:var(--text-bright);
+    text-shadow:0 1px 3px rgba(0,0,0,.5);white-space:nowrap;
+  }
+  .passrate-verdict{
+    width:80px;text-align:center;flex-shrink:0;
+  }
+  .passrate-verdict .verdict-badge{
+    font-size:.7rem;padding:.2rem .5rem;border-radius:4px;
+    font-weight:600;letter-spacing:.03em;
+  }
+  .verdict-recommended{
+    background:rgba(0,200,83,.15);color:var(--success);
+  }
+  .verdict-risky{
+    background:rgba(255,145,0,.15);color:var(--warning);
+  }
+  .verdict-never{
+    background:rgba(198,40,40,.15);color:var(--danger);
+  }
+
+  /* Line budget comparison */
+  .line-budget-grid{
+    display:grid;grid-template-columns:repeat(3,1fr);
+    gap:.8rem;margin-top:1rem;
+  }
+  .line-budget-card{
+    background:rgba(255,255,255,.03);border:1px solid var(--card-border);
+    border-radius:8px;padding:.8rem;text-align:center;
+  }
+  .line-budget-card .lb-items{
+    font-size:1.3rem;font-weight:700;color:var(--orange);
+  }
+  .line-budget-card .lb-label{
+    font-size:.7rem;color:var(--text-dim);margin-top:.2rem;
+  }
+  .line-budget-card .lb-calc{
+    font-size:.68rem;color:var(--text-dim);margin-top:.3rem;
+    font-family:'Cascadia Code','Fira Code',monospace;
+    background:rgba(255,255,255,.04);padding:.3rem;border-radius:4px;
+  }
+
+  /* ── Daily Timeline ── */
+  .timeline-section{
+    background:var(--card-bg);border:1px solid var(--card-border);
+    border-radius:14px;padding:1.5rem;
+  }
+  .timeline{
+    position:relative;padding-left:2.5rem;
+  }
+  .timeline::before{
+    content:'';position:absolute;left:1rem;top:0;bottom:0;
+    width:2px;background:linear-gradient(180deg,var(--orange),var(--gold),var(--orange));
+    border-radius:1px;
+  }
+  .timeline-item{
+    position:relative;margin-bottom:1.2rem;
+    padding:.6rem .8rem;
+    background:rgba(255,255,255,.03);border:1px solid var(--card-border);
+    border-radius:8px;transition:all .3s ease;
+  }
+  .timeline-item:hover{
+    border-color:rgba(255,145,0,.3);
+    background:rgba(255,145,0,.05);
+  }
+  .timeline-item::before{
+    content:'';position:absolute;
+    left:-1.85rem;top:50%;transform:translateY(-50%);
+    width:12px;height:12px;border-radius:50%;
+    background:var(--bg);border:2px solid var(--orange);
+  }
+  .timeline-item.active::before{
+    background:var(--orange);
+    box-shadow:0 0 10px rgba(255,145,0,.5);
+  }
+  .timeline-item .tl-time{
+    font-size:.75rem;color:var(--orange);font-weight:600;
+    margin-bottom:.2rem;
+  }
+  .timeline-item .tl-event{
+    font-size:.82rem;color:var(--text-bright);font-weight:500;
+  }
+  .timeline-item .tl-detail{
+    font-size:.72rem;color:var(--text-dim);margin-top:.2rem;line-height:1.4;
+  }
+  .timeline-stats{
+    display:flex;flex-wrap:wrap;gap:1rem;margin-top:1rem;
+    padding-top:1rem;border-top:1px solid var(--line-color);
+  }
+  .timeline-stat{
+    background:rgba(255,255,255,.03);border:1px solid var(--card-border);
+    border-radius:8px;padding:.6rem 1rem;text-align:center;flex:1;min-width:120px;
+  }
+  .timeline-stat .ts-value{
+    font-size:1.2rem;font-weight:700;color:var(--orange);
+  }
+  .timeline-stat .ts-label{
+    font-size:.68rem;color:var(--text-dim);margin-top:.1rem;
+  }
+
+  /* ── Bottom Info Cards ── */
+  .info-panel{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:1rem;width:100%;max-width:1400px;padding:0 1rem 2rem;
+  }
+  .info-card{
+    background:var(--card-bg);border:1px solid var(--card-border);
+    border-radius:10px;padding:1.1rem;
+  }
+  .info-card h4{
+    font-size:.85rem;text-transform:uppercase;letter-spacing:.08em;
+    color:var(--gold);margin-bottom:.7rem;font-weight:600;
+  }
+  .info-card ul{list-style:none}
+  .info-card li{
+    font-size:.78rem;color:var(--text-dim);padding:.25rem 0;
+    display:flex;align-items:center;gap:.4rem;
+  }
+  .info-card li .icon{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+  .info-card code{
+    font-family:'Cascadia Code','Fira Code',monospace;font-size:.72rem;
+    background:rgba(255,255,255,.06);padding:.1rem .35rem;border-radius:3px;
+    color:var(--text);
+  }
+  .info-card table{
+    width:100%;border-collapse:collapse;font-size:.75rem;
+  }
+  .info-card th{
+    text-align:left;color:var(--text-bright);font-weight:600;
+    padding:.3rem .4rem;border-bottom:1px solid var(--line-color);
+    font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;
+  }
+  .info-card td{
+    padding:.3rem .4rem;color:var(--text-dim);
+    border-bottom:1px solid rgba(255,255,255,.04);
+  }
+
+  /* ── Simulate button ── */
+  .sim-btn{
+    display:inline-flex;align-items:center;gap:.5rem;
+    background:linear-gradient(135deg,rgba(255,145,0,.15),rgba(255,145,0,.05));
+    border:1.5px solid var(--orange);color:var(--orange);
+    padding:.6rem 1.5rem;border-radius:8px;font-size:.85rem;
+    font-weight:600;cursor:pointer;transition:all .3s ease;
+    letter-spacing:.04em;margin-bottom:1rem;
+  }
+  .sim-btn:hover{
+    background:linear-gradient(135deg,rgba(255,145,0,.25),rgba(255,145,0,.1));
+    box-shadow:0 0 25px rgba(255,145,0,.3);
+  }
+  .sim-btn:disabled{opacity:.5;cursor:not-allowed}
+  .sim-btn .spinner{
+    width:14px;height:14px;border:2px solid transparent;
+    border-top-color:var(--orange);border-radius:50%;
+    animation:spin .8s linear infinite;display:none;
+  }
+  .sim-btn.running .spinner{display:block}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* Status bar */
+  .status-bar{
+    width:100%;max-width:1400px;padding:0 1rem;
+    margin-bottom:.5rem;min-height:1.8rem;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .status-text{
+    font-size:.8rem;color:var(--orange);font-weight:500;
+    letter-spacing:.03em;opacity:0;transition:opacity .3s ease;
+  }
+  .status-text.show{opacity:1}
+
+  /* ── Tooltip ── */
+  .tooltip{
+    position:fixed;z-index:100;
+    background:#1e1e3a;border:1px solid rgba(255,255,255,.15);
+    border-radius:8px;padding:.7rem 1rem;
+    font-size:.75rem;color:var(--text);
+    max-width:280px;pointer-events:none;
+    box-shadow:0 8px 30px rgba(0,0,0,.5);
+    opacity:0;transition:opacity .2s ease;
+    line-height:1.5;
+  }
+  .tooltip.show{opacity:1}
+  .tooltip strong{color:var(--text-bright);display:block;margin-bottom:.25rem}
+
+  /* ── Back link ── */
+  .back-link{
+    position:absolute;top:1rem;left:1.5rem;
+    font-size:.8rem;color:var(--text-dim);text-decoration:none;
+    display:flex;align-items:center;gap:.3rem;
+    transition:color .2s ease;
+  }
+  .back-link:hover{color:var(--orange)}
+
+  /* ── Footer ── */
+  footer{
+    text-align:center;padding:1.5rem;width:100%;
+    border-top:1px solid var(--line-color);
+    margin-top:1rem;
+  }
+  footer p{font-size:.72rem;color:var(--text-dim)}
+
+  /* ── Responsive ── */
+  @media(max-width:900px){
+    .pipeline-flow{gap:.3rem}
+    .step{width:105px}
+    .step .step-box{width:100px;padding:.6rem .35rem}
+    .quality-grid{grid-template-columns:1fr}
+    .line-budget-grid{grid-template-columns:1fr}
+    .passrate-row{flex-wrap:wrap}
+    .passrate-label{width:100%}
+    .passrate-verdict{width:100%;text-align:left;margin-top:.3rem}
+  }
+  @media(max-width:600px){
+    header h1{font-size:1.3rem}
+    .step{width:85px}
+    .step .step-box{width:80px;padding:.5rem .3rem}
+    .step .step-name{font-size:.7rem}
+    .info-panel{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<a href="orchestration-diagram.html" class="back-link">&#9664; All Channels</a>
+
+<header>
+  <h1>BEC Pipeline Architecture</h1>
+  <p class="subtitle">Business Execution Central &mdash; 7-Step Script Generation Pipeline</p>
+  <div class="header-tags">
+    <span class="header-tag">107&ndash;120 Lines Target</span>
+    <span class="header-tag">133 Hard Limit</span>
+    <span class="header-tag">Sonnet + Haiku</span>
+    <span class="header-tag">10 Scripts/Day</span>
+    <span class="header-tag">~$1.50&ndash;$2.50/Script</span>
+  </div>
+</header>
+
+<!-- Legend -->
+<div class="legend">
+  <div class="legend-item">
+    <div class="legend-swatch" style="background:var(--sonnet)"></div>
+    Claude Sonnet (Generation/Review/Fix)
+  </div>
+  <div class="legend-item">
+    <div class="legend-swatch" style="background:var(--haiku)"></div>
+    Claude Haiku (Validation/QA/Confirm)
+  </div>
+  <div class="legend-item">
+    <div class="legend-swatch" style="background:var(--orange)"></div>
+    BEC Accent
+  </div>
+</div>
+
+<button class="sim-btn" id="simBtn" onclick="simulateRun()">
+  <div class="spinner"></div>
+  <span>Simulate Pipeline Run</span>
+</button>
+
+<div class="status-bar"><span class="status-text" id="statusText"></span></div>
+
+<div class="content-wrap">
+
+  <!-- ═══════════════ SECTION 1: Pipeline Flow ═══════════════ -->
+  <section id="sectionPipeline">
+    <div class="section-title">
+      <span class="dot" style="background:var(--orange)"></span>
+      Pipeline Flow
+    </div>
+    <div class="pipeline-section">
+      <div class="pipeline-flow" id="pipelineFlow"></div>
+      <div class="loop-indicators">
+        <div class="loop-badge"><span class="arrow-loop">&#x21A9;</span> Length FAIL &rarr; Regenerate (trim &amp; retry once)</div>
+        <div class="loop-badge"><span class="arrow-loop">&#x21A9;</span> Review FAIL &rarr; Fix &rarr; Re-Review (max 3x)</div>
+        <div class="loop-badge"><span class="arrow-loop">&#x21A9;</span> QA FAIL &rarr; Fix (max 2x, then NEEDS-MANUAL-REVIEW)</div>
+      </div>
+      <div class="step-detail" id="stepDetail"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ SECTION 2: Script Structure ═══════════════ -->
+  <section id="sectionStructure">
+    <div class="section-title">
+      <span class="dot" style="background:var(--gold)"></span>
+      Script Structure Breakdown
+    </div>
+    <div class="structure-wrap">
+      <div class="structure-bar" id="structureBar"></div>
+      <div class="structure-detail" id="structureDetail"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ SECTION 3: Quality Gates ═══════════════ -->
+  <section id="sectionQuality">
+    <div class="section-title">
+      <span class="dot" style="background:var(--sonnet)"></span>
+      Quality Gates (GPT-4o + Gemini 2.5 Cross-Review)
+    </div>
+    <div class="quality-grid" id="qualityGrid"></div>
+  </section>
+
+  <!-- ═══════════════ SECTION 4: Pass Rate ═══════════════ -->
+  <section id="sectionPassRate">
+    <div class="section-title">
+      <span class="dot" style="background:var(--success)"></span>
+      Pass Rate Comparison
+    </div>
+    <div class="passrate-section">
+      <div id="passRateRows"></div>
+      <div class="line-budget-grid" id="lineBudgetGrid"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ SECTION 5: Daily Operations ═══════════════ -->
+  <section id="sectionTimeline">
+    <div class="section-title">
+      <span class="dot" style="background:var(--haiku)"></span>
+      Daily Operations Timeline
+    </div>
+    <div class="timeline-section">
+      <div class="timeline" id="timeline"></div>
+      <div class="timeline-stats" id="timelineStats"></div>
+    </div>
+  </section>
+
+</div>
+
+<!-- ═══════════════ SECTION 6: Bottom Info Cards ═══════════════ -->
+<div class="info-panel">
+  <!-- Cost Breakdown -->
+  <div class="info-card">
+    <h4>Cost Breakdown</h4>
+    <table>
+      <thead>
+        <tr><th>Step</th><th>Model</th><th>Cost</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Generate</td><td style="color:var(--sonnet)">Sonnet</td><td>~$0.80</td></tr>
+        <tr><td>Length Check</td><td style="color:var(--haiku)">Haiku</td><td>~$0.01</td></tr>
+        <tr><td>Review</td><td style="color:var(--sonnet)">Sonnet</td><td>~$0.50</td></tr>
+        <tr><td>Fix</td><td style="color:var(--sonnet)">Sonnet</td><td>~$0.50</td></tr>
+        <tr><td>QA Humanize</td><td style="color:var(--haiku)">Haiku</td><td>~$0.02</td></tr>
+        <tr><td>QA Validate</td><td style="color:var(--haiku)">Haiku</td><td>~$0.02</td></tr>
+        <tr><td>Confirm</td><td style="color:var(--haiku)">Haiku</td><td>~$0.02</td></tr>
+        <tr style="border-top:2px solid var(--line-color)">
+          <td colspan="2" style="color:var(--gold);font-weight:600">Total per A+ Script</td>
+          <td style="color:var(--gold);font-weight:600">$1.50&ndash;$2.50</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Line Budget -->
+  <div class="info-card">
+    <h4>Line Budget (Pictory ~4.5s/line)</h4>
+    <ul>
+      <li><span class="icon" style="background:var(--success)"></span>Target: <strong style="color:var(--success)">107&ndash;120</strong> narration lines</li>
+      <li><span class="icon" style="background:var(--warning)"></span>Hard limit: <strong style="color:var(--warning)">133</strong> lines / <strong style="color:var(--warning)">1,050</strong> words</li>
+      <li><span class="icon" style="background:var(--sonnet)"></span>Target duration: 8&ndash;9 min (max 10 min)</li>
+      <li><span class="icon" style="background:var(--text-dim)"></span>First drafts avg 350&ndash;410 lines (budget for trimming pass)</li>
+      <li><span class="icon" style="background:var(--haiku)"></span>Early length check saves ~$0.50 per overlong script</li>
+      <li><span class="icon" style="background:var(--orange)"></span>Word budget: 800&ndash;1,000 target</li>
+    </ul>
+  </div>
+
+  <!-- Error Handling -->
+  <div class="info-card">
+    <h4>Error Handling</h4>
+    <table>
+      <thead>
+        <tr><th>Scenario</th><th>Action</th><th>Max</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Length FAIL</td><td>Return to Generator (trim)</td><td>1 retry</td></tr>
+        <tr><td>Review FAIL</td><td>Fix &rarr; Re-Review</td><td>3 cycles</td></tr>
+        <tr><td>QA FAIL</td><td>Fix &rarr; Re-QA</td><td>2 retries</td></tr>
+        <tr><td>3 consecutive</td><td style="color:var(--danger)">STOP pipeline</td><td>&mdash;</td></tr>
+        <tr><td>Unrecoverable</td><td>Save as NEEDS-REVIEW</td><td>&mdash;</td></tr>
+        <tr><td>Rate limit</td><td>Wait 60s, retry once</td><td>1 retry</td></tr>
+        <tr><td>Token exhaust</td><td>Save progress, stop</td><td>&mdash;</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- QA Checklist -->
+  <div class="info-card">
+    <h4>QA Checklist (Required for PASS)</h4>
+    <ul>
+      <li><span class="icon" style="background:var(--success)"></span>Line count: 107&ndash;133 narration lines</li>
+      <li><span class="icon" style="background:var(--success)"></span>Word count: &le;1,050 words</li>
+      <li><span class="icon" style="background:var(--success)"></span>Title format: odd number + emotional parenthetical</li>
+      <li><span class="icon" style="background:var(--success)"></span>Hook: visceral pain point in first 5&ndash;8 seconds</li>
+      <li><span class="icon" style="background:var(--success)"></span>Channel intro line present</li>
+      <li><span class="icon" style="background:var(--success)"></span>Mid-video CTA at ~50% mark</li>
+      <li><span class="icon" style="background:var(--success)"></span>1&ndash;2 micro-stories (present tense, sensory detail)</li>
+      <li><span class="icon" style="background:var(--success)"></span>Max 2 amplification beats (varied phrasing)</li>
+      <li><span class="icon" style="background:var(--success)"></span>No AI-tell phrases</li>
+      <li><span class="icon" style="background:var(--success)"></span>Confrontational closing CTA</li>
+      <li><span class="icon" style="background:var(--success)"></span>BEC Challenge: specific + time-bound</li>
+      <li><span class="icon" style="background:var(--success)"></span>"Your move. Let's go." sign-off</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Tooltip -->
+<div class="tooltip" id="tooltip"></div>
+
+<footer>
+  <p>BEC Pipeline Architecture &mdash; Business Execution Central &mdash; YouTube Content Factory</p>
+</footer>
+
+<script>
+(function(){
+
+  // ── Pipeline Steps ──
+  const steps = [
+    {
+      num:1, name:'Generate', model:'sonnet', cost:'~$0.80',
+      tip:'Create script draft via Claude Sonnet. Enforce 107-120 lines. Must include 1-2 micro-stories, max 2 amplification beats, confrontational CTA.',
+      detail:{
+        title:'Script Generation',
+        desc:'The generator reads BEC-Script-Agent-Instructions.md and 2-3 existing A+ scripts as benchmarks, then produces a full draft enforcing the 107-120 line target.',
+        items:[
+          'Model: Claude Sonnet (~$0.80 per generation)',
+          'Target: 107-120 narration lines, 800-1,000 words',
+          'Must follow 5-section structure: Title, Hook, Stakes, List, Closing',
+          'Include 1-2 micro-stories with present tense and sensory detail',
+          'Max 2 amplification beats, rotated from 8-phrase bank',
+          'Confrontational closing CTA (never generic "subscribe")',
+          'Voice: direct, mentor-like, execution-focused',
+          'First drafts avg 350-410 lines; generator must self-enforce limit',
+          'Output: script .txt + thumbnail options .txt'
+        ]
+      }
+    },
+    {
+      num:2, name:'Length Check', model:'haiku', cost:'~$0.01',
+      tip:'FAIL if >133 narration lines or >1,050 words. Early rejection saves ~$0.50 in downstream review costs. Claude Haiku.',
+      detail:{
+        title:'Length Validation',
+        desc:'A cheap, fast check using Claude Haiku. Catches overlong scripts before expensive review, saving ~$0.50 per rejection.',
+        items:[
+          'Model: Claude Haiku (~$0.01)',
+          'PASS if: \u2264133 narration lines AND \u22641,050 words',
+          'FAIL if: >133 lines OR >1,050 words',
+          'On FAIL: return to Generator for trimming (1 retry)',
+          'Counts only narration lines (excludes blank lines, stage directions)',
+          'Pictory timing: ~4.5 seconds per line',
+          '133 lines \u00d7 4.5s = ~10 min (hard max for video length)'
+        ]
+      }
+    },
+    {
+      num:3, name:'Review', model:'sonnet', cost:'~$0.50',
+      tip:'12-dimension detailed review: hook, retention, originality, AI detection, emotional impact, actionability, Pictory compatibility, CTR, shareability, CTA strength, amplification variety, micro-story quality.',
+      detail:{
+        title:'Detailed Review (12 Dimensions)',
+        desc:'Claude Sonnet reviews the script across 12 quality dimensions. Each dimension receives a score. Overall grade must be A+ to pass.',
+        items:[
+          'Model: Claude Sonnet (~$0.50)',
+          'Dimensions: hook strength, retention hooks, originality, AI detection risk',
+          'Dimensions: emotional impact, actionability, Pictory compatibility, CTR potential',
+          'Dimensions: shareability, closing CTA strength, amplification variety, micro-story presence',
+          'PASS: A+ grade across all dimensions',
+          'FAIL: loops back to Fix step (max 3 review-fix cycles)',
+          'After 3 failures: save as NEEDS-REVIEW and move on'
+        ]
+      }
+    },
+    {
+      num:4, name:'Fix', model:'sonnet', cost:'~$0.50',
+      tip:'Apply all review feedback. Strengthen emotional impact, vary amplification phrases, sharpen closing CTA. Save as next revision.',
+      detail:{
+        title:'Fix / Revision',
+        desc:'Applies all fixes from the Review step. Each fix creates a new revision (v1.1, v1.2, etc). Max 3 review-fix cycles.',
+        items:[
+          'Model: Claude Sonnet (~$0.50)',
+          'Addresses every issue flagged in Review',
+          'Strengthens micro-stories (present tense, sensory detail)',
+          'Varies amplification beat phrasing (rotate from bank)',
+          'Sharpens confrontational closing CTA',
+          'Kills any detected AI-tell phrases',
+          'Must maintain line count within 107-133 range',
+          'Saves as next revision: [BEC-D.S]-Title.txt'
+        ]
+      }
+    },
+    {
+      num:5, name:'QA Humanize', model:'haiku', cost:'~$0.02',
+      tip:'Quick QA check for AI-sounding patterns: repeated phrases, parallel structure, formulaic language. Claude Haiku.',
+      detail:{
+        title:'QA Humanization Check',
+        desc:'A focused Haiku pass that specifically targets AI-tell patterns the reviewer might miss. Binary check for mechanical-sounding language.',
+        items:[
+          'Model: Claude Haiku (~$0.02)',
+          'Detects repeated phrases (3+ occurrences = FAIL)',
+          'Flags overly parallel structure across list items',
+          'Kill list: "Let\'s dive in", "In today\'s fast-paced world", "It\'s important to note"',
+          'Kill list: "At the end of the day", "Here\'s the thing" (>1x)',
+          'Kill list: "Let\'s unpack this", "Let\'s explore", "In this day and age"',
+          'Checks amplification beat variety (no duplicates)',
+          'On FAIL: return to Fix step'
+        ]
+      }
+    },
+    {
+      num:6, name:'QA Validate', model:'haiku', cost:'~$0.02',
+      tip:'Binary checks for all required elements: formatting, structure, CTA placement, micro-stories, sign-off. Claude Haiku.',
+      detail:{
+        title:'QA Validation',
+        desc:'Comprehensive binary checklist validation. Every required structural element must be present and correctly formatted.',
+        items:[
+          'Model: Claude Haiku (~$0.02)',
+          'Checks: title format (odd number + parenthetical)',
+          'Checks: hook with visceral pain point (lines 2-8)',
+          'Checks: channel intro line present',
+          'Checks: mid-video CTA at ~50% mark',
+          'Checks: 1-2 micro-stories spread across script',
+          'Checks: closing CTA is confrontational',
+          'Checks: BEC Challenge is specific + time-bound',
+          'Checks: "Your move. Let\'s go." sign-off',
+          'Max 2 retries, then save as NEEDS-MANUAL-REVIEW'
+        ]
+      }
+    },
+    {
+      num:7, name:'Confirm', model:'haiku', cost:'~$0.02',
+      tip:'Final PASS/FAIL gate. On PASS: save as A+ script. On FAIL: route back for manual review. Claude Haiku.',
+      detail:{
+        title:'Final Confirmation',
+        desc:'Fast binary PASS/FAIL. If everything checks out, the script is saved as an A+ production-ready file.',
+        items:[
+          'Model: Claude Haiku (~$0.02)',
+          'Binary PASS/FAIL decision',
+          'On PASS: script saved as A+ to channel folder',
+          'On FAIL: saved as NEEDS-MANUAL-REVIEW.txt',
+          'Logs result to pipeline.log',
+          'Updates process day tracking',
+          'Triggers email delivery if configured'
+        ]
+      }
+    }
+  ];
+
+  // ── Build Pipeline ──
+  const flow = document.getElementById('pipelineFlow');
+  let selectedStep = null;
+
+  function renderPipeline(){
+    flow.innerHTML = '';
+    steps.forEach((s,i) => {
+      const step = document.createElement('div');
+      step.className = 'step';
+      step.setAttribute('data-step-idx', i);
+      step.innerHTML = `
+        <div class="step-box ${s.model}" data-tooltip="${s.tip}">
+          <div class="step-num">Step ${s.num}</div>
+          <div class="step-name">${s.name}</div>
+          <div class="step-model ${s.model}-label">${s.model.toUpperCase()}</div>
+          <div class="step-cost">${s.cost}</div>
+        </div>
+      `;
+      step.addEventListener('click', () => toggleStepDetail(i));
+      flow.appendChild(step);
+      if(i < steps.length - 1){
+        const arrow = document.createElement('div');
+        arrow.className = 'step-arrow';
+        arrow.innerHTML = '&#x25B6;';
+        flow.appendChild(arrow);
+      }
+    });
+    // Star
+    const star = document.createElement('div');
+    star.className = 'step-star';
+    star.innerHTML = `<div style="font-size:2.2rem;color:var(--gold);text-shadow:0 0 15px rgba(255,215,0,.5)">&#9733;</div>
+      <div style="font-size:.72rem;color:var(--gold);font-weight:600;margin-top:.1rem">A+ PASS</div>`;
+    flow.appendChild(star);
+  }
+
+  function toggleStepDetail(idx){
+    const panel = document.getElementById('stepDetail');
+    const allBoxes = document.querySelectorAll('.step .step-box');
+
+    if(selectedStep === idx){
+      selectedStep = null;
+      panel.classList.remove('visible');
+      allBoxes.forEach(b => b.classList.remove('selected'));
+      return;
+    }
+
+    selectedStep = idx;
+    allBoxes.forEach(b => b.classList.remove('selected'));
+    const currentBox = document.querySelector(`.step[data-step-idx="${idx}"] .step-box`);
+    if(currentBox) currentBox.classList.add('selected');
+
+    const s = steps[idx];
+    panel.innerHTML = `
+      <h4>${s.detail.title} <span class="model-badge ${s.model}-badge">${s.model.toUpperCase()} ${s.cost}</span></h4>
+      <p>${s.detail.desc}</p>
+      <ul class="detail-list">
+        ${s.detail.items.map(item => `<li>${item}</li>`).join('')}
+      </ul>
+    `;
+    panel.classList.add('visible');
+    panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+
+  renderPipeline();
+
+  // ── Script Structure ──
+  const sections = [
+    {
+      name:'Title', lines:'1', pct:1, color:'#aa00ff',
+      rules:[
+        'Format: [Number] [Topic] ([Emotional Parenthetical])',
+        'Use odd numbers only: 5, 7, or 9',
+        'Under 60 characters total',
+        'Example: "5 Signs You\'re Addicted to Comfort (And It\'s Costing You Everything)"'
+      ]
+    },
+    {
+      name:'Hook', lines:'2\u20138', pct:6, color:'#2979ff',
+      rules:[
+        'THE 5-8 SECOND RULE: first lines must hit with visceral pain point',
+        'Reframe statement (challenge assumptions)',
+        'Consequence statement (what it costs them)',
+        'Channel intro: "Welcome to Business Execution Central \u2014 where Leaders get it done."',
+        '"Let\'s get serious." transition line'
+      ]
+    },
+    {
+      name:'Stakes', lines:'9\u201324', pct:14, color:'#00bfa5',
+      rules:[
+        'Cost list: 5 specific costs (not bulleted)',
+        'Psychological truth (pattern interrupt)',
+        'Guru-busting line (attack bad advice)',
+        '"Let\'s break it down." transition',
+        'Triple qualifier setup before the list begins'
+      ]
+    },
+    {
+      name:'The List', lines:'~75', pct:65, color:'var(--orange)',
+      rules:[
+        'BULK of the script \u2014 numbered items with provocative titles',
+        '5-item: max 15 lines/item (75 total) \u2014 94% pass rate',
+        '7-item: max 10 lines/item (70 total) \u2014 42% pass rate',
+        '9-item: max 8 lines/item (72 total) \u2014 0% pass rate, NEVER approve',
+        'Each item: teaser + title + explanation (2-3 lines) + bullets (3 max) + scenario OR "Ask yourself:" + quotable closer',
+        'Mid-video CTA required at 50% mark',
+        '1-2 micro-stories spread across items (present tense, sensory detail)',
+        'Pattern interrupts at 30%, 50%, 70% marks'
+      ]
+    },
+    {
+      name:'Closing', lines:'Last 10', pct:9, color:'#c62828',
+      rules:[
+        'BEC Challenge: specific, concrete, time-bound action',
+        'Thank you line (required)',
+        'Subscribe CTA: confrontational tone from approved bank',
+        'Generic next video tease (no specific title reference)',
+        'Standard sign-off: "Your move. Let\'s go."',
+        'Max 10 lines \u2014 do not exceed'
+      ]
+    }
+  ];
+
+  const structureBar = document.getElementById('structureBar');
+  let selectedSection = null;
+
+  sections.forEach((sec, i) => {
+    const seg = document.createElement('div');
+    seg.className = 'structure-segment';
+    seg.style.flex = sec.pct;
+    seg.style.background = typeof sec.color === 'string' && sec.color.startsWith('var') ?
+      sec.color : sec.color;
+    if(!sec.color.startsWith('var')) seg.style.background = sec.color;
+    seg.style.opacity = '0.7';
+    seg.innerHTML = `
+      <span class="seg-label">${sec.name}</span>
+      <span class="seg-lines">${sec.lines}</span>
+    `;
+    seg.addEventListener('click', () => toggleStructureDetail(i));
+    structureBar.appendChild(seg);
+  });
+
+  function toggleStructureDetail(idx){
+    const panel = document.getElementById('structureDetail');
+    const segs = document.querySelectorAll('.structure-segment');
+
+    if(selectedSection === idx){
+      selectedSection = null;
+      panel.classList.remove('visible');
+      segs.forEach(s => {s.classList.remove('selected'); s.style.opacity = '0.7'});
+      return;
+    }
+
+    selectedSection = idx;
+    segs.forEach(s => {s.classList.remove('selected'); s.style.opacity = '0.5'});
+    segs[idx].classList.add('selected');
+    segs[idx].style.opacity = '1';
+
+    const sec = sections[idx];
+    panel.innerHTML = `
+      <h4 style="color:${sec.color.startsWith('var') ? 'var(--orange)' : sec.color}">${sec.name} <span style="font-weight:400;font-size:.78rem;color:var(--text-dim)">(Lines ${sec.lines})</span></h4>
+      <ul>
+        ${sec.rules.map(r => `<li>${r}</li>`).join('')}
+      </ul>
+    `;
+    panel.classList.add('visible');
+  }
+
+  // ── Quality Gates ──
+  const qualityGates = [
+    {
+      title:'Micro-Stories',
+      icon:'\u270D',
+      summary:'1-2 per script. Present tense, sensory detail, consequence the viewer can FEEL. Spread across script.',
+      details:{
+        good:['You\'re on the call. Your boss asks for the update. Your mouth opens\u2026 nothing.','Your alarm goes off at 5AM. You stare at the ceiling. Third day in a row.'],
+        bad:['Once upon a time, a businessman struggled with discipline.','Many people have experienced this kind of failure.'],
+        rules:['Must be in present tense ("You\'re on the call" not "You were on the call")','Include at least one sensory or physical detail','End with a consequence the viewer can FEEL','Spread across script \u2014 don\'t cluster in first 2 items','2-3 lines maximum per micro-story']
+      }
+    },
+    {
+      title:'Amplification Variety',
+      icon:'\u{1F504}',
+      summary:'Max 2 per script. Rotate from 8-phrase bank. Never repeat the same phrase.',
+      details:{
+        good:['Let me say it again:','Read that line again.','Say that out loud.','Let me be direct:','Sit with that for a second.','That\'s worth repeating:','Let that land.','One more time:'],
+        bad:['Using "Let me say it again" twice in same script','Using "Read that line again" 3 times across 2 scripts','Placing both amplification beats in the first half'],
+        rules:['Maximum 2 amplification beats per script','Must use different phrases each time','Rotate across the 8-phrase bank','Track usage across scripts to avoid repetition','Space them evenly through the script']
+      }
+    },
+    {
+      title:'AI-Tell Detection',
+      icon:'\u{1F6AB}',
+      summary:'Kill list of formulaic phrases that flag content as AI-generated. Zero tolerance.',
+      details:{
+        bad:['Let\'s dive in / Let\'s unpack this / Let\'s explore','In today\'s fast-paced world / In this day and age','It\'s important to note / It\'s worth mentioning','At the end of the day (overused)','Here\'s the thing (>1x per script)','Any phrase repeated 3+ times','Overly parallel structure across ALL list items'],
+        rules:['Zero tolerance \u2014 any AI-tell phrase is an automatic flag','Check for mechanical-sounding transitions','Vary sentence structure between list items','Use natural contractions (don\'t, you\'re, it\'s)','Break parallel patterns \u2014 each item should feel different']
+      }
+    },
+    {
+      title:'Confrontational CTAs',
+      icon:'\u{1F4A5}',
+      summary:'Closing calls-to-action must challenge the viewer. Never generic "please subscribe".',
+      details:{
+        good:['If you watched this far and don\'t subscribe, you\'re just collecting information\u2014not executing.','Subscribe if you\'re done making excuses. Skip it if you\'re comfortable where you are.','Hit subscribe or admit you\'re fine being average. Your call.'],
+        bad:['Please like and subscribe for more content!','Don\'t forget to hit that subscribe button.','Subscribe and follow for more great videos.'],
+        rules:['Must challenge the viewer\'s identity or commitment','Frame subscribing as an action only serious people take','Never beg, plead, or use generic YouTube language','Tie the CTA to the video\'s theme','Must feel like a dare, not a request']
+      }
+    }
+  ];
+
+  const qualityGrid = document.getElementById('qualityGrid');
+
+  qualityGates.forEach((gate, i) => {
+    const card = document.createElement('div');
+    card.className = 'quality-card';
+    card.style.cssText = `--q-color:${['var(--success)','var(--haiku)','var(--danger)','var(--orange)'][i]}`;
+    card.querySelector
+    card.innerHTML = `
+      <div style="position:absolute;top:0;left:0;right:0;height:3px;border-radius:10px 10px 0 0;background:${['var(--success)','var(--haiku)','var(--danger)','var(--orange)'][i]}"></div>
+      <h4><span style="font-size:1.1rem">${gate.icon}</span> ${gate.title}</h4>
+      <div class="q-summary">${gate.summary}</div>
+      <div class="expand-hint">Click to expand</div>
+      <div class="q-detail">
+        ${gate.details.good ? `<h5 style="color:var(--success)">Good Examples</h5><ul class="good">${gate.details.good.map(g => `<li>${g}</li>`).join('')}</ul>` : ''}
+        ${gate.details.bad ? `<h5 style="color:var(--danger)">Bad / Kill</h5><ul class="bad">${gate.details.bad.map(b => `<li>${b}</li>`).join('')}</ul>` : ''}
+        ${gate.details.rules ? `<h5 style="color:var(--orange)">Rules</h5><ul class="neutral">${gate.details.rules.map(r => `<li>${r}</li>`).join('')}</ul>` : ''}
+      </div>
+    `;
+    card.addEventListener('click', () => card.classList.toggle('expanded'));
+    qualityGrid.appendChild(card);
+  });
+
+  // ── Pass Rate ──
+  const passRates = [
+    {items:5, rate:94, lines:'max 15/item = 75 + 36 framing = 111', verdict:'Recommended', verdictClass:'verdict-recommended', color:'var(--success)'},
+    {items:7, rate:42, lines:'max 10/item = 70 + 36 framing = 106', verdict:'Risky', verdictClass:'verdict-risky', color:'var(--warning)'},
+    {items:9, rate:0, lines:'max 8/item = 72 + 36 framing = 108', verdict:'Never', verdictClass:'verdict-never', color:'var(--danger)'}
+  ];
+
+  const passRateRows = document.getElementById('passRateRows');
+  passRates.forEach(pr => {
+    const row = document.createElement('div');
+    row.className = 'passrate-row';
+    row.innerHTML = `
+      <div class="passrate-label">
+        <div class="pr-title">${pr.items}-Item</div>
+        <div class="pr-lines">${pr.lines}</div>
+      </div>
+      <div class="passrate-bar-wrap">
+        <div class="passrate-bar" style="background:${pr.color};width:0%" data-target="${pr.rate}">
+          <span>${pr.rate}% pass rate</span>
+        </div>
+      </div>
+      <div class="passrate-verdict">
+        <span class="verdict-badge ${pr.verdictClass}">${pr.verdict}</span>
+      </div>
+    `;
+    passRateRows.appendChild(row);
+  });
+
+  // Line budget cards
+  const lineBudgetGrid = document.getElementById('lineBudgetGrid');
+  const budgets = [
+    {items:'5 Items', calc:'15 lines/item \u00d7 5\n+ 36 framing lines\n= 111 total', label:'94% pass rate'},
+    {items:'7 Items', calc:'10 lines/item \u00d7 7\n+ 36 framing lines\n= 106 total', label:'42% pass rate'},
+    {items:'9 Items', calc:'8 lines/item \u00d7 9\n+ 36 framing lines\n= 108 total', label:'0% pass rate'}
+  ];
+  budgets.forEach(b => {
+    const card = document.createElement('div');
+    card.className = 'line-budget-card';
+    card.innerHTML = `
+      <div class="lb-items">${b.items}</div>
+      <div class="lb-label">${b.label}</div>
+      <pre class="lb-calc">${b.calc}</pre>
+    `;
+    lineBudgetGrid.appendChild(card);
+  });
+
+  // Animate pass rate bars on scroll
+  let barsAnimated = false;
+  function animateBars(){
+    if(barsAnimated) return;
+    const section = document.getElementById('sectionPassRate');
+    const rect = section.getBoundingClientRect();
+    if(rect.top < window.innerHeight * 0.8){
+      barsAnimated = true;
+      document.querySelectorAll('.passrate-bar').forEach(bar => {
+        const target = bar.getAttribute('data-target');
+        setTimeout(() => {
+          bar.style.width = Math.max(target, 8) + '%';
+        }, 100);
+      });
+    }
+  }
+  window.addEventListener('scroll', animateBars);
+  setTimeout(animateBars, 500);
+
+  // ── Daily Timeline ──
+  const timelineData = [
+    {time:'07:00', event:'Morning Email Delivery', detail:'Send previous day\'s A+ scripts to spataray@gmail.com. Increment process day counter.', active:true},
+    {time:'08:00', event:'Cron Run #1', detail:'First orchestrator run. Generate 1 script through full 7-step pipeline.', active:false},
+    {time:'09:15', event:'Cron Run #2', detail:'Second generation cycle. Pipeline takes ~8-10 min per script.', active:false},
+    {time:'10:30', event:'Cron Run #3', detail:'Continue production. ~80% of runs produce an A+ script.', active:false},
+    {time:'11:45', event:'Cron Run #4', detail:'Mid-morning batch. Failed scripts saved as NEEDS-REVIEW.', active:false},
+    {time:'13:00', event:'Cron Run #5\u20136', detail:'Post-lunch runs. 2 more attempts. Errors logged to logs/errors.log.', active:false},
+    {time:'15:00', event:'Cron Run #7\u20138', detail:'Afternoon production. Token budget monitored.', active:false},
+    {time:'17:00', event:'Cron Run #9\u201310', detail:'Late afternoon. Check for 3-consecutive-failure stops.', active:false},
+    {time:'19:00', event:'Cron Run #11', detail:'Evening run. Most scripts should be complete by now.', active:false},
+    {time:'21:00', event:'Cron Run #12 (Final)', detail:'Last run of the day. Save all progress. Prepare for morning email.', active:false},
+    {time:'22:00', event:'End of Day', detail:'12 runs complete. ~10 usable A+ scripts produced. Ready for next morning email.', active:true}
+  ];
+
+  const timeline = document.getElementById('timeline');
+  timelineData.forEach(item => {
+    const el = document.createElement('div');
+    el.className = 'timeline-item' + (item.active ? ' active' : '');
+    el.innerHTML = `
+      <div class="tl-time">${item.time}</div>
+      <div class="tl-event">${item.event}</div>
+      <div class="tl-detail">${item.detail}</div>
+    `;
+    timeline.appendChild(el);
+  });
+
+  const timelineStats = document.getElementById('timelineStats');
+  const stats = [
+    {value:'12', label:'Cron Runs/Day'},
+    {value:'~80%', label:'Success Rate'},
+    {value:'~10', label:'Scripts/Day'},
+    {value:'~$18', label:'Daily Cost'},
+  ];
+  stats.forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'timeline-stat';
+    el.innerHTML = `<div class="ts-value">${s.value}</div><div class="ts-label">${s.label}</div>`;
+    timelineStats.appendChild(el);
+  });
+
+  // ── Tooltips ──
+  const tooltip = document.getElementById('tooltip');
+  let tooltipTimer = null;
+
+  document.addEventListener('mouseover', e => {
+    const target = e.target.closest('[data-tooltip]');
+    if(!target) return;
+    clearTimeout(tooltipTimer);
+    tooltip.innerHTML = target.dataset.tooltip;
+    tooltip.classList.add('show');
+    positionTooltip(e);
+  });
+  document.addEventListener('mousemove', e => {
+    if(tooltip.classList.contains('show')) positionTooltip(e);
+  });
+  document.addEventListener('mouseout', e => {
+    const target = e.target.closest('[data-tooltip]');
+    if(!target) return;
+    tooltipTimer = setTimeout(() => tooltip.classList.remove('show'), 100);
+  });
+
+  function positionTooltip(e){
+    let x = e.clientX + 15;
+    let y = e.clientY + 15;
+    if(x + 290 > window.innerWidth) x = e.clientX - 295;
+    if(y + 100 > window.innerHeight) y = e.clientY - 110;
+    tooltip.style.left = x + 'px';
+    tooltip.style.top = y + 'px';
+  }
+
+  // ── Simulate Pipeline Run ──
+  window.simulateRun = async function(){
+    const btn = document.getElementById('simBtn');
+    if(btn.disabled) return;
+    btn.disabled = true;
+    btn.classList.add('running');
+
+    const statusEl = document.getElementById('statusText');
+    function setStatus(text){
+      statusEl.textContent = text;
+      statusEl.classList.add('show');
+    }
+
+    // Reset
+    selectedStep = null;
+    document.getElementById('stepDetail').classList.remove('visible');
+    document.querySelectorAll('.step .step-box').forEach(b => {
+      b.classList.remove('selected','active-step');
+      b.style.boxShadow = '';
+    });
+
+    setStatus('Reading BEC-Script-Agent-Instructions.md + benchmarks...');
+    await wait(1200);
+
+    for(let i = 0; i < steps.length; i++){
+      const s = steps[i];
+      setStatus(`Step ${s.num}: ${s.name} (${s.model.toUpperCase()}) ${s.cost}...`);
+
+      const allBoxes = document.querySelectorAll('.step .step-box');
+      allBoxes.forEach(b => {b.classList.remove('active-step'); b.style.boxShadow = ''});
+
+      const currentBox = document.querySelector(`.step[data-step-idx="${i}"] .step-box`);
+      if(currentBox){
+        currentBox.classList.add('active-step');
+        const glowColor = s.model === 'sonnet' ? 'rgba(255,111,97,.5)' : 'rgba(100,255,218,.5)';
+        currentBox.style.boxShadow = `0 0 25px ${glowColor}`;
+      }
+
+      await wait(1800);
+
+      // Simulate a failure at Review step (step 3)
+      if(i === 2){
+        setStatus('Step 3: Review found issues \u2014 routing to Fix...');
+        if(currentBox) currentBox.style.boxShadow = '0 0 25px rgba(255,111,97,.8)';
+        await wait(1200);
+
+        // Flash Fix step
+        const fixBox = document.querySelector('.step[data-step-idx="3"] .step-box');
+        if(fixBox){
+          setStatus('Step 4: Fixing review issues (revision v1.1)...');
+          fixBox.classList.add('active-step');
+          fixBox.style.boxShadow = '0 0 25px rgba(255,111,97,.5)';
+          currentBox.classList.remove('active-step');
+          currentBox.style.boxShadow = '';
+        }
+        await wait(1500);
+
+        // Back to review
+        setStatus('Step 3: Re-Review after fix \u2014 PASS');
+        if(fixBox){fixBox.classList.remove('active-step'); fixBox.style.boxShadow = ''}
+        if(currentBox){
+          currentBox.classList.add('active-step');
+          currentBox.style.boxShadow = '0 0 25px rgba(100,255,218,.5)';
+        }
+        await wait(1000);
+      }
+    }
+
+    // Clear all highlights
+    document.querySelectorAll('.step .step-box').forEach(b => {
+      b.classList.remove('active-step');
+      b.style.boxShadow = '';
+    });
+
+    setStatus('Pipeline complete. Script saved as A+ \u2605');
+
+    // Flash the star
+    const star = document.querySelector('.step-star');
+    if(star) star.style.filter = 'drop-shadow(0 0 20px rgba(255,215,0,.8))';
+    await wait(2500);
+    if(star) star.style.filter = '';
+
+    statusEl.classList.remove('show');
+    btn.disabled = false;
+    btn.classList.remove('running');
+  };
+
+  function wait(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+})();
+</script>
+
+</body>
+</html>

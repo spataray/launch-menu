@@ -366,7 +366,7 @@
       <div class="badge" style="background:rgba(198,40,40,.2);color:var(--red)">Special Pipeline</div>
     </div>
     <div class="channel-card" style="--accent:var(--orange)" data-channel="BEC" data-pipeline="standard"
-         data-tooltip="Business Execution Central: Business motivation & strategy. Standard 6-step pipeline. 5-item scripts: 94% pass rate. 7-item: 42%.">
+         data-tooltip="Business Execution Central: Business motivation &amp; strategy. Standard 6-step pipeline. 5-item scripts: 94% pass rate. 7-item: 42%. Enhanced with external AI review checks: emotional impact, AI detection, micro-stories, amplification variety, confrontational CTAs.">
       <h3>BEC</h3>
       <div class="full-name">Business Execution Central</div>
       <div class="badge">Standard Pipeline</div>
@@ -446,6 +446,16 @@
       <li><span class="icon" style="background:var(--text-dim)"></span>2 scripts/batch safe | 3 max/session</li>
     </ul>
   </div>
+  <div class="info-card">
+    <h4>Quality Checks (External AI Review)</h4>
+    <ul>
+      <li><span class="icon" style="background:var(--sonnet)"></span>Emotional impact &mdash; 1-2 micro-stories per script (gut punch, not just intellect)</li>
+      <li><span class="icon" style="background:var(--haiku)"></span>AI detection &mdash; kill formulaic phrases, vary amplification beats (max 2)</li>
+      <li><span class="icon" style="background:var(--orange)"></span>Closing CTA &mdash; confrontational tone, never generic &ldquo;subscribe and follow&rdquo;</li>
+      <li><span class="icon" style="background:var(--purple)"></span>Pattern variety &mdash; break parallel structure, rotate phrasing across items</li>
+      <li><span class="icon" style="background:var(--gold)"></span><strong style="color:var(--gold)">Source: GPT-4o + Gemini 2.5 cross-review (Feb 2026)</strong></li>
+    </ul>
+  </div>
 </div>
 
 <!-- Tooltip -->
@@ -455,11 +465,11 @@
 (function(){
   // ── Pipeline step definitions ──
   const standardSteps = [
-    {num:1,name:'Generate',model:'sonnet',tip:'Create script draft. Enforce 107-120 lines. Claude Sonnet for quality creative writing.'},
+    {num:1,name:'Generate',model:'sonnet',tip:'Create script draft. Enforce 107-120 lines. Must include 1-2 micro-stories for emotional impact. Max 2 amplification beats with varied phrasing. Confrontational closing CTA (no generic subscribe). Claude Sonnet.'},
     {num:2,name:'Length Check',model:'haiku',tip:'FAIL if >133 narration lines or >1,050 words. Early rejection saves ~$0.50. Claude Haiku (fast, cheap).'},
-    {num:3,name:'Review',model:'sonnet',tip:'10-dimension detailed review. Claude Sonnet for deep reasoning. FAIL loops to Fix.'},
-    {num:4,name:'Fix',model:'sonnet',tip:'Apply all review fixes. Save as next revision. Max 3 review-fix cycles.'},
-    {num:5,name:'QA Validate',model:'haiku',tip:'Binary validation checks. Catches reviewer hallucinations. Claude Haiku for speed.'},
+    {num:3,name:'Review',model:'sonnet',tip:'12-dimension review: hook, retention, originality, AI detection risk, emotional impact, actionability, Pictory compatibility, CTR potential, shareability, closing CTA strength, amplification variety, micro-story presence. Claude Sonnet. FAIL loops to Fix.'},
+    {num:4,name:'Fix',model:'sonnet',tip:'Apply all review fixes. Strengthen emotional impact, vary amplification phrases, sharpen closing CTA. Save as next revision. Max 3 review-fix cycles.'},
+    {num:5,name:'QA Validate',model:'haiku',tip:'Binary checks: formatting, required elements, AI-tell phrase detection (kills repeated phrases, parallel structure, formulaic patterns). Claude Haiku.'},
     {num:6,name:'Confirm + Save',model:'haiku',tip:'Fast PASS/FAIL confirmation. On PASS: save as A+ script. Claude Haiku.'}
   ];
   const uafSteps = [
