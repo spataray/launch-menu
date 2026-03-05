@@ -193,6 +193,48 @@
   .req-title{font-size:.9rem;font-weight:700;color:var(--text-bright);margin-bottom:.3rem}
   .req-desc{font-size:.75rem;color:var(--text-dim);line-height:1.5}
 
+  /* ── Live Status ── */
+  .status-header-row{
+    display:flex;align-items:center;gap:1rem;
+    padding:.85rem 1.1rem;
+    background:var(--card-bg);border:1px solid var(--card-border);
+    border-radius:10px;margin-bottom:.8rem;
+  }
+  .pipeline-dot{
+    width:12px;height:12px;border-radius:50%;
+    background:#555;flex-shrink:0;transition:background .4s;
+  }
+  .pipeline-dot.running{background:var(--success);box-shadow:0 0 8px rgba(0,200,83,.5)}
+  .pipeline-dot.stopped{background:#ef5350}
+  #pipeline-status-text{font-weight:700;font-size:.9rem}
+  #pipeline-uptime{font-size:.75rem;color:var(--text-dim);margin-left:.4rem}
+  .action-btn{
+    font-size:.75rem;font-weight:600;padding:.3rem .8rem;border-radius:6px;
+    cursor:pointer;border:1px solid transparent;transition:all .2s;
+    letter-spacing:.03em;
+  }
+  .action-btn.start{background:rgba(0,200,83,.12);border-color:rgba(0,200,83,.3);color:var(--success)}
+  .action-btn.start:hover{background:rgba(0,200,83,.22)}
+  .action-btn.stop{background:rgba(198,40,40,.12);border-color:rgba(198,40,40,.3);color:#ef5350}
+  .action-btn.stop:hover{background:rgba(198,40,40,.22)}
+  .action-btn.release{background:rgba(255,145,0,.1);border-color:rgba(255,145,0,.35);color:#ff9100}
+  .action-btn.retry{background:rgba(0,188,212,.1);border-color:rgba(0,188,212,.35);color:var(--teal)}
+  .state-badge{
+    display:inline-block;font-size:.72rem;font-weight:700;
+    padding:.1rem .5rem;border-radius:4px;letter-spacing:.03em;
+  }
+  .state-badge.processing{background:rgba(167,139,250,.15);color:var(--parallel)}
+  .state-badge.pending   {background:rgba(255,145,0,.12);color:#ff9100}
+  .state-badge.completed {background:rgba(0,200,83,.12);color:var(--success)}
+  .state-badge.failed    {background:rgba(198,40,40,.12);color:#ef5350}
+  .stuck-warn{font-size:.65rem;color:#ff9100;margin-right:.4rem}
+  #api-badge{font-size:.72rem;transition:color .3s}
+  #api-offline-msg{
+    text-align:center;padding:1.8rem 1rem;
+    color:var(--text-dim);font-size:.85rem;line-height:1.8;
+  }
+  #api-offline-msg code{color:var(--teal)}
+
   /* ── Detail panel ── */
   #detail-panel{
     background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);
@@ -286,6 +328,58 @@
 </header>
 
 <div class="content-wrap">
+
+  <!-- ── Live Status ── -->
+  <section>
+    <div class="section-title">
+      <span class="dot" style="background:var(--success)"></span>
+      Live Status
+      <div style="margin-left:auto;display:flex;gap:.7rem;align-items:center">
+        <span id="api-badge" style="color:var(--text-dim)">&#9679; connecting&hellip;</span>
+        <button class="sim-btn" onclick="refreshStatus()" style="padding:.35rem .8rem;font-size:.75rem">&#8635; Refresh</button>
+      </div>
+    </div>
+
+    <!-- Pipeline state row -->
+    <div class="status-header-row">
+      <div class="pipeline-dot" id="pipeline-dot"></div>
+      <div>
+        <span id="pipeline-status-text" style="color:var(--text-dim)">--</span>
+        <span id="pipeline-uptime"></span>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:.5rem">
+        <button class="action-btn start" id="btn-start" style="display:none" onclick="pipelineAction('start')">&#9654; Start Pipeline</button>
+        <button class="action-btn stop"  id="btn-stop"  style="display:none" onclick="pipelineAction('stop')">&#9632; Stop Pipeline</button>
+      </div>
+    </div>
+
+    <!-- Submissions table -->
+    <div class="table-wrap" id="subs-wrap">
+      <table class="files-table">
+        <thead>
+          <tr>
+            <th>State</th>
+            <th>Niche</th>
+            <th>Type</th>
+            <th>Submitted</th>
+            <th>Age</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="subs-tbody">
+          <tr><td colspan="6" style="color:var(--text-dim);text-align:center;padding:1.5rem">Loading&hellip;</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Offline message -->
+    <div id="api-offline-msg" style="display:none">
+      <div style="font-size:1.4rem;margin-bottom:.5rem">&#9888;</div>
+      Status API is offline.<br>
+      Run <code>./pipeline start</code> on your machine to enable live status.<br>
+      <span style="font-size:.75rem;opacity:.7">Fetching from http://127.0.0.1:7373</span>
+    </div>
+  </section>
 
   <!-- ── Order Flow ── -->
   <section>
@@ -682,6 +776,152 @@ async function runSimulation() {
 }
 
 function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+
+// ── Live Status ──────────────────────────────────────────────────────────────
+
+const API = 'http://127.0.0.1:7373';
+
+function relTime(epochSec, now) {
+  const d = now - epochSec;
+  if (d < 60)    return d + 's';
+  if (d < 3600)  return Math.floor(d/60) + 'm';
+  if (d < 86400) return Math.floor(d/3600) + 'h ' + Math.floor((d%3600)/60) + 'm';
+  return Math.floor(d/86400) + 'd ' + Math.floor((d%86400)/3600) + 'h';
+}
+
+function fmtDate(iso) {
+  const d = new Date(iso);
+  if (isNaN(d)) return iso || '—';
+  return d.toLocaleString('en-US', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
+}
+
+function maskEmail(e) {
+  if (!e) return '—';
+  return e.replace(/^(.{2}).*?(@.+)$/, '$1\u2026$2');
+}
+
+const TYPE_LABEL = {
+  full_channel_build: 'Full Build',
+  niche_research:     'Niche Only',
+  reorder_scripts:    'Reorder',
+};
+
+function renderSubmissions(subs, now) {
+  const tbody = document.getElementById('subs-tbody');
+  // show all active, latest 10 completed/failed
+  const active = subs.filter(s => s.state === 'processing' || s.state === 'pending');
+  const done   = subs.filter(s => s.state === 'completed'  || s.state === 'failed').slice(0, 10);
+  const items  = [...active, ...done];
+
+  if (!items.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="color:var(--text-dim);text-align:center;padding:1.5rem">No submissions found</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = items.map(s => {
+    const age   = relTime(s.mtime, now);
+    const stuck = s.state === 'processing' && (now - s.mtime) > 7200;
+    const type  = TYPE_LABEL[s.request_type] || s.request_type || '—';
+    let actions = '';
+    if (s.state === 'processing') {
+      const warn = stuck ? '<span class="stuck-warn">&#9888; STUCK</span>' : '';
+      actions = warn + `<button class="action-btn release" onclick="apiPost('/release/${s.filename}')">Release</button>`;
+    } else if (s.state === 'failed') {
+      actions = `<button class="action-btn retry" onclick="apiPost('/retry/${s.filename}')">Retry</button>`;
+    }
+    return `<tr>
+      <td><span class="state-badge ${s.state}">${s.state}</span></td>
+      <td style="color:var(--text-bright);font-size:.82rem">${s.niche || '—'}</td>
+      <td style="color:var(--text-dim);font-size:.75rem">${type}</td>
+      <td style="font-size:.75rem;color:var(--text-dim)">${fmtDate(s.submitted_at)}<br>
+          <span style="font-size:.65rem;opacity:.7">${maskEmail(s.email)}</span></td>
+      <td style="color:var(--text-dim);font-size:.75rem">${age}</td>
+      <td>${actions}</td>
+    </tr>`;
+  }).join('');
+}
+
+function setApiOnline(online) {
+  const badge   = document.getElementById('api-badge');
+  const offline = document.getElementById('api-offline-msg');
+  const wrap    = document.getElementById('subs-wrap');
+  if (online) {
+    badge.textContent = '\u25cf online';
+    badge.style.color = 'var(--success)';
+    offline.style.display = 'none';
+    wrap.style.display    = '';
+  } else {
+    badge.textContent = '\u25cf offline';
+    badge.style.color = '#ef5350';
+    offline.style.display = 'block';
+    wrap.style.display    = 'none';
+    document.getElementById('pipeline-dot').className        = 'pipeline-dot stopped';
+    document.getElementById('pipeline-status-text').textContent = 'API offline';
+    document.getElementById('pipeline-status-text').style.color = 'var(--text-dim)';
+    document.getElementById('pipeline-uptime').textContent   = '';
+    document.getElementById('btn-start').style.display       = 'none';
+    document.getElementById('btn-stop').style.display        = 'none';
+  }
+}
+
+async function refreshStatus() {
+  try {
+    const r = await fetch(`${API}/status`);
+    const d = await r.json();
+    setApiOnline(true);
+
+    const dot    = document.getElementById('pipeline-dot');
+    const text   = document.getElementById('pipeline-status-text');
+    const uptime = document.getElementById('pipeline-uptime');
+
+    if (d.pipeline_running) {
+      dot.className      = 'pipeline-dot running';
+      text.textContent   = 'Running  (PID ' + d.pid + ')';
+      text.style.color   = 'var(--success)';
+      uptime.textContent = d.start_time ? 'up ' + relTime(d.start_time, d.now) : '';
+      document.getElementById('btn-start').style.display = 'none';
+      document.getElementById('btn-stop').style.display  = '';
+    } else {
+      dot.className      = 'pipeline-dot stopped';
+      text.textContent   = 'Stopped';
+      text.style.color   = '#ef5350';
+      uptime.textContent = '';
+      document.getElementById('btn-start').style.display = '';
+      document.getElementById('btn-stop').style.display  = 'none';
+    }
+
+    renderSubmissions(d.submissions, d.now);
+  } catch (e) {
+    setApiOnline(false);
+  }
+}
+
+async function pipelineAction(action) {
+  document.getElementById('btn-start').disabled = true;
+  document.getElementById('btn-stop').disabled  = true;
+  try {
+    await fetch(`${API}/pipeline/${action}`, {method: 'POST'});
+    setTimeout(refreshStatus, 1500);
+  } catch (e) {
+    alert('API error: ' + e.message);
+  } finally {
+    document.getElementById('btn-start').disabled = false;
+    document.getElementById('btn-stop').disabled  = false;
+  }
+}
+
+async function apiPost(path) {
+  try {
+    await fetch(API + path, {method: 'POST'});
+    setTimeout(refreshStatus, 400);
+  } catch (e) {
+    alert('API error: ' + e.message);
+  }
+}
+
+// initial load + 15s auto-refresh
+refreshStatus();
+setInterval(refreshStatus, 15000);
 </script>
 </body>
 </html>
