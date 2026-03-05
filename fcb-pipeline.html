@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FCB Pipeline Architecture</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#1a1a2e;--bg2:#16213e;--bg3:#0f3460;
+    --text:#e0e0e0;--text-dim:#8892a4;--text-bright:#ffffff;
+    --gold:#ffd700;--gold-dim:#b8960f;
+    --teal:#00bcd4;--teal-dim:#00838f;
+    --sonnet:#ff6f61;--haiku:#64ffda;
+    --line-color:rgba(255,255,255,0.12);
+    --card-bg:rgba(255,255,255,0.05);
+    --card-border:rgba(255,255,255,0.08);
+    --success:#00c853;--warning:#ff9100;--danger:#c62828;
+    --parallel:#a78bfa;
+  }
+  html{font-size:14px;scroll-behavior:smooth}
+  body{
+    background:var(--bg);color:var(--text);
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    min-height:100vh;overflow-x:hidden;
+    display:flex;flex-direction:column;align-items:center;
+  }
+
+  /* ── Header ── */
+  header{
+    text-align:center;padding:2.5rem 1rem 1.5rem;width:100%;
+    background:linear-gradient(180deg,rgba(0,188,212,.12) 0%,transparent 100%);
+  }
+  header h1{
+    font-size:2rem;font-weight:700;letter-spacing:.15em;
+    color:var(--teal);text-transform:uppercase;
+    text-shadow:0 0 30px rgba(0,188,212,.3);
+  }
+  header p.subtitle{
+    color:var(--text-dim);font-size:1rem;margin-top:.4rem;letter-spacing:.05em;
+  }
+  .header-tags{
+    display:flex;flex-wrap:wrap;gap:.6rem;justify-content:center;margin-top:1rem;
+  }
+  .header-tag{
+    font-size:.75rem;padding:.3rem .8rem;border-radius:6px;
+    background:rgba(0,188,212,.1);border:1px solid rgba(0,188,212,.25);
+    color:var(--teal);font-weight:600;letter-spacing:.03em;
+  }
+
+  /* ── Nav back ── */
+  .nav-back{
+    position:absolute;top:1.2rem;left:1.2rem;
+    font-size:.8rem;color:var(--text-dim);text-decoration:none;
+    display:flex;align-items:center;gap:.3rem;transition:color .2s;
+  }
+  .nav-back:hover{color:var(--teal)}
+
+  /* ── Section containers ── */
+  .content-wrap{width:100%;max-width:1200px;padding:0 1rem}
+  section{margin-bottom:2rem}
+  .section-title{
+    font-size:1rem;color:var(--gold);margin-bottom:1rem;
+    text-transform:uppercase;letter-spacing:.1em;font-weight:600;
+    display:flex;align-items:center;gap:.5rem;
+    padding-bottom:.5rem;border-bottom:1px solid var(--line-color);
+  }
+  .section-title .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+
+  /* ── Legend ── */
+  .legend{
+    display:flex;flex-wrap:wrap;gap:1.2rem;justify-content:center;
+    padding:.8rem 1rem;margin-bottom:.5rem;
+  }
+  .legend-item{display:flex;align-items:center;gap:.4rem;font-size:.75rem;color:var(--text-dim)}
+  .legend-swatch{width:14px;height:14px;border-radius:3px;border:1px solid rgba(255,255,255,.15)}
+
+  /* ── Order Flow ── */
+  .flow-section{
+    background:var(--card-bg);border:1px solid var(--card-border);
+    border-radius:14px;padding:1.5rem 1.5rem 2rem;
+  }
+  .flow-row{
+    display:flex;flex-wrap:wrap;align-items:center;
+    gap:.5rem;justify-content:center;margin-bottom:1rem;
+  }
+  .flow-node{
+    display:flex;flex-direction:column;align-items:center;
+    gap:.3rem;cursor:default;
+  }
+  .flow-box{
+    border-radius:8px;padding:.55rem .9rem;text-align:center;
+    border:1.5px solid transparent;transition:all .25s;
+    font-size:.78rem;font-weight:600;letter-spacing:.02em;min-width:110px;
+  }
+  .flow-box.web{background:rgba(100,255,218,.08);border-color:rgba(100,255,218,.25);color:var(--haiku)}
+  .flow-box.google{background:rgba(255,145,0,.08);border-color:rgba(255,145,0,.25);color:#ff9100}
+  .flow-box.bash{background:rgba(167,139,250,.08);border-color:rgba(167,139,250,.25);color:var(--parallel)}
+  .flow-box.claude{background:rgba(255,111,97,.08);border-color:rgba(255,111,97,.25);color:var(--sonnet)}
+  .flow-box.email{background:rgba(0,200,83,.08);border-color:rgba(0,200,83,.25);color:var(--success)}
+  .flow-sub{font-size:.65rem;color:var(--text-dim)}
+  .flow-arrow{font-size:1.1rem;color:var(--text-dim)}
+
+  .flow-node:hover .flow-box{transform:translateY(-2px)}
+  .flow-node:hover .flow-box.web{box-shadow:0 4px 16px rgba(100,255,218,.2);border-color:var(--haiku)}
+  .flow-node:hover .flow-box.google{box-shadow:0 4px 16px rgba(255,145,0,.2);border-color:#ff9100}
+  .flow-node:hover .flow-box.bash{box-shadow:0 4px 16px rgba(167,139,250,.2);border-color:var(--parallel)}
+  .flow-node:hover .flow-box.claude{box-shadow:0 4px 16px rgba(255,111,97,.2);border-color:var(--sonnet)}
+  .flow-node:hover .flow-box.email{box-shadow:0 4px 16px rgba(0,200,83,.2);border-color:var(--success)}
+
+  /* ── Pipeline stages ── */
+  .stages-grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.8rem;
+  }
+  .stage{
+    background:var(--card-bg);border:1.5px solid var(--card-border);
+    border-radius:10px;padding:1rem;transition:all .25s;cursor:pointer;
+    position:relative;
+  }
+  .stage:hover{transform:translateY(-2px)}
+  .stage.sonnet{border-left:3px solid var(--sonnet)}
+  .stage.haiku{border-left:3px solid var(--haiku)}
+  .stage.parallel-group{
+    border:1.5px dashed rgba(167,139,250,.4);
+    background:rgba(167,139,250,.04);
+  }
+  .stage-num{
+    font-size:.65rem;color:var(--text-dim);font-weight:700;
+    letter-spacing:.1em;text-transform:uppercase;margin-bottom:.3rem;
+  }
+  .stage-name{font-size:.88rem;font-weight:700;color:var(--text-bright);margin-bottom:.4rem}
+  .stage-model{
+    display:inline-block;font-size:.65rem;padding:.15rem .5rem;
+    border-radius:4px;font-weight:600;letter-spacing:.04em;
+  }
+  .stage-model.sonnet{background:rgba(255,111,97,.15);color:var(--sonnet)}
+  .stage-model.haiku{background:rgba(100,255,218,.15);color:var(--haiku)}
+  .stage-desc{font-size:.75rem;color:var(--text-dim);margin-top:.5rem;line-height:1.5}
+
+  .parallel-label{
+    font-size:.65rem;color:var(--parallel);font-weight:700;
+    letter-spacing:.08em;text-transform:uppercase;
+    display:flex;align-items:center;gap:.3rem;margin-bottom:.6rem;
+  }
+  .parallel-inner{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+
+  /* ── State machine ── */
+  .state-flow{
+    display:flex;flex-wrap:wrap;align-items:center;
+    gap:.5rem;justify-content:center;padding:1rem 0;
+  }
+  .state-box{
+    border-radius:8px;padding:.5rem 1rem;font-size:.8rem;font-weight:700;
+    text-align:center;min-width:100px;
+  }
+  .state-box.pending{background:rgba(255,145,0,.12);border:1.5px solid rgba(255,145,0,.3);color:#ff9100}
+  .state-box.processing{background:rgba(167,139,250,.12);border:1.5px solid rgba(167,139,250,.3);color:var(--parallel)}
+  .state-box.completed{background:rgba(0,200,83,.12);border:1.5px solid rgba(0,200,83,.3);color:var(--success)}
+  .state-box.failed{background:rgba(198,40,40,.12);border:1.5px solid rgba(198,40,40,.3);color:#ef5350}
+  .state-arrow{font-size:1.1rem;color:var(--text-dim)}
+  .state-branch{display:flex;flex-direction:column;gap:.5rem;align-items:flex-start}
+
+  /* ── Deliverables ── */
+  .deliverables-grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.8rem;
+  }
+  .deliverable{
+    background:var(--card-bg);border:1px solid var(--card-border);
+    border-radius:10px;padding:1rem;
+  }
+  .deliverable-format{
+    display:inline-block;font-size:.65rem;padding:.15rem .5rem;border-radius:4px;
+    font-weight:700;letter-spacing:.05em;margin-bottom:.5rem;
+  }
+  .deliverable-format.html{background:rgba(255,145,0,.15);color:#ff9100}
+  .deliverable-format.txt{background:rgba(167,139,250,.15);color:var(--parallel)}
+  .deliverable-name{font-size:.88rem;font-weight:700;color:var(--text-bright);margin-bottom:.3rem}
+  .deliverable-desc{font-size:.75rem;color:var(--text-dim);line-height:1.5}
+
+  /* ── Request types ── */
+  .req-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.8rem}
+  .req-card{
+    background:var(--card-bg);border:1px solid var(--card-border);
+    border-radius:10px;padding:1rem;
+  }
+  .req-tag{
+    display:inline-block;font-size:.65rem;padding:.15rem .5rem;border-radius:4px;
+    font-weight:700;letter-spacing:.04em;margin-bottom:.5rem;font-family:monospace;
+  }
+  .req-tag.full{background:rgba(0,188,212,.15);color:var(--teal)}
+  .req-tag.niche{background:rgba(255,145,0,.15);color:#ff9100}
+  .req-tag.reorder{background:rgba(100,255,218,.15);color:var(--haiku)}
+  .req-title{font-size:.9rem;font-weight:700;color:var(--text-bright);margin-bottom:.3rem}
+  .req-desc{font-size:.75rem;color:var(--text-dim);line-height:1.5}
+
+  /* ── Detail panel ── */
+  #detail-panel{
+    background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);
+    border-radius:10px;padding:1rem 1.2rem;margin-top:1rem;
+    display:none;transition:all .3s;
+  }
+  #detail-panel.visible{display:block}
+  #detail-title{font-size:.95rem;font-weight:700;color:var(--text-bright);margin-bottom:.4rem}
+  #detail-body{font-size:.8rem;color:var(--text-dim);line-height:1.6}
+
+  /* ── Tooltip ── */
+  .tooltip{position:relative}
+  .tooltip:hover::after{
+    content:attr(data-tip);
+    position:absolute;bottom:110%;left:50%;transform:translateX(-50%);
+    background:#0d1117;border:1px solid rgba(255,255,255,.15);
+    color:var(--text);font-size:.72rem;padding:.4rem .7rem;
+    border-radius:6px;white-space:nowrap;z-index:10;pointer-events:none;
+  }
+
+  /* ── Key Files ── */
+  .files-table{width:100%;border-collapse:collapse;font-size:.8rem}
+  .files-table th{
+    text-align:left;color:var(--gold);font-weight:600;padding:.5rem .8rem;
+    border-bottom:1px solid var(--line-color);letter-spacing:.05em;
+  }
+  .files-table td{
+    padding:.5rem .8rem;border-bottom:1px solid rgba(255,255,255,.04);
+    vertical-align:top;
+  }
+  .files-table tr:last-child td{border-bottom:none}
+  .files-table tr:hover td{background:rgba(255,255,255,.02)}
+  .file-code{font-family:monospace;color:var(--teal);font-size:.78rem}
+  .file-role{color:var(--text-dim)}
+  .file-lines{color:var(--text-dim);font-size:.72rem;white-space:nowrap}
+  .table-wrap{
+    background:var(--card-bg);border:1px solid var(--card-border);
+    border-radius:10px;overflow:hidden;
+  }
+
+  /* ── Simulate button ── */
+  .sim-btn{
+    display:inline-flex;align-items:center;gap:.5rem;
+    background:rgba(0,188,212,.12);border:1px solid rgba(0,188,212,.3);
+    color:var(--teal);font-size:.8rem;font-weight:600;
+    padding:.5rem 1.1rem;border-radius:8px;cursor:pointer;
+    transition:all .25s;letter-spacing:.05em;
+  }
+  .sim-btn:hover{background:rgba(0,188,212,.22);box-shadow:0 0 20px rgba(0,188,212,.2)}
+  .sim-btn.running{
+    background:rgba(255,145,0,.12);border-color:rgba(255,145,0,.3);color:#ff9100;
+  }
+
+  /* ── Stage active animation ── */
+  @keyframes stagePulse{0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)}}
+  .stage.active-sim{animation:stagePulse .8s ease-in-out;border-color:rgba(0,188,212,.6) !important}
+
+  /* ── Progress bar ── */
+  .progress-wrap{
+    background:rgba(255,255,255,.06);border-radius:4px;height:6px;
+    margin-top:.8rem;overflow:hidden;display:none;
+  }
+  .progress-wrap.visible{display:block}
+  .progress-bar{
+    height:100%;background:var(--teal);border-radius:4px;
+    width:0%;transition:width .6s ease;
+  }
+
+  footer{
+    text-align:center;padding:2rem;
+    border-top:1px solid var(--card-border);
+    color:var(--text-dim);font-size:.8rem;width:100%;margin-top:2rem;
+  }
+</style>
+</head>
+<body>
+
+<a class="nav-back" href="index.html">&#8592; Launch Menu</a>
+
+<header>
+  <h1>FCB Pipeline Architecture</h1>
+  <p class="subtitle">Faceless AI Channel Builder &mdash; Automated YouTube Channel Package Generator</p>
+  <div class="header-tags">
+    <span class="header-tag">Claude Sonnet</span>
+    <span class="header-tag">Claude Haiku</span>
+    <span class="header-tag">Parallel Agents</span>
+    <span class="header-tag">Google Sheets</span>
+    <span class="header-tag">Gmail SMTP</span>
+    <span class="header-tag">Bash Orchestration</span>
+  </div>
+</header>
+
+<div class="content-wrap">
+
+  <!-- ── Order Flow ── -->
+  <section>
+    <div class="section-title">
+      <span class="dot" style="background:var(--teal)"></span>
+      Order Flow
+    </div>
+    <div class="flow-section">
+      <div class="flow-row">
+        <div class="flow-node tooltip" data-tip="GitHub Pages landing page">
+          <div class="flow-box web">index.html</div>
+          <div class="flow-sub">GitHub Pages</div>
+        </div>
+        <span class="flow-arrow">&#8594;</span>
+        <div class="flow-node tooltip" data-tip="doPost webhook — writes order row to Sheet">
+          <div class="flow-box google">Apps Script</div>
+          <div class="flow-sub">Google Apps Script</div>
+        </div>
+        <span class="flow-arrow">&#8594;</span>
+        <div class="flow-node tooltip" data-tip="Order stored with status=pending">
+          <div class="flow-box google">Google Sheet</div>
+          <div class="flow-sub">Order tracking</div>
+        </div>
+        <span class="flow-arrow">&#8594;</span>
+        <div class="flow-node tooltip" data-tip="poll-sheets.py polls CSV every 30s">
+          <div class="flow-box bash">poll-sheets.py</div>
+          <div class="flow-sub">Every 30s</div>
+        </div>
+        <span class="flow-arrow">&#8594;</span>
+        <div class="flow-node tooltip" data-tip="Creates JSON file in submissions/pending/">
+          <div class="flow-box bash">pending/*.json</div>
+          <div class="flow-sub">State file</div>
+        </div>
+      </div>
+      <div class="flow-row">
+        <div class="flow-node tooltip" data-tip="watchdog.sh polls pending/ every 30s">
+          <div class="flow-box bash">watchdog.sh</div>
+          <div class="flow-sub">Every 30s</div>
+        </div>
+        <span class="flow-arrow">&#8594;</span>
+        <div class="flow-node tooltip" data-tip="6-stage Claude CLI agent pipeline">
+          <div class="flow-box claude">Claude Agents</div>
+          <div class="flow-sub">6 stages</div>
+        </div>
+        <span class="flow-arrow">&#8594;</span>
+        <div class="flow-node tooltip" data-tip="HTML + TXT files assembled and sent">
+          <div class="flow-box email">send-email.py</div>
+          <div class="flow-sub">Gmail SMTP</div>
+        </div>
+        <span class="flow-arrow">&#8594;</span>
+        <div class="flow-node tooltip" data-tip="Customer receives 6-file HTML package">
+          <div class="flow-box email">Customer</div>
+          <div class="flow-sub">Email delivery</div>
+        </div>
+      </div>
+      <div style="text-align:center;margin-top:.5rem">
+        <span style="font-size:.72rem;color:var(--text-dim)">Real-time status updates posted to Apps Script &mdash; frontend polls every 5s to animate the 6-station UI</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Pipeline Stages ── -->
+  <section>
+    <div class="section-title">
+      <span class="dot" style="background:var(--sonnet)"></span>
+      Pipeline Stages
+      <div style="margin-left:auto;display:flex;gap:.8rem;align-items:center">
+        <button class="sim-btn" id="simBtn" onclick="runSimulation()">&#9654; Simulate Run</button>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-swatch" style="background:rgba(255,111,97,.2);border-color:rgba(255,111,97,.4)"></div>
+        Claude Sonnet (heavy work)
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch" style="background:rgba(100,255,218,.2);border-color:rgba(100,255,218,.4)"></div>
+        Claude Haiku (lighter tasks)
+      </div>
+      <div class="legend-item">
+        <div class="legend-swatch" style="background:rgba(167,139,250,.08);border-color:rgba(167,139,250,.4)"></div>
+        Parallel group
+      </div>
+    </div>
+
+    <div class="progress-wrap" id="simProgress"><div class="progress-bar" id="simBar"></div></div>
+    <div id="detail-panel">
+      <div id="detail-title"></div>
+      <div id="detail-body"></div>
+    </div>
+
+    <div style="margin-top:.8rem">
+      <!-- Steps 1-3 in a row -->
+      <div class="stages-grid" style="margin-bottom:.8rem">
+
+        <div class="stage sonnet" id="stage1" onclick="showDetail(1)">
+          <div class="stage-num">Step 1 / 6</div>
+          <div class="stage-name">Niche Research</div>
+          <span class="stage-model sonnet">Sonnet</span>
+          <div class="stage-desc">CPM data, competition analysis, 10+ video ideas. Web search enabled.</div>
+        </div>
+
+        <div class="stage sonnet" id="stage2" onclick="showDetail(2)">
+          <div class="stage-num">Step 2 / 6</div>
+          <div class="stage-name">Channel Blueprint</div>
+          <span class="stage-model sonnet">Sonnet</span>
+          <div class="stage-desc">Channel name, brand identity, target audience, 30-day content calendar.</div>
+        </div>
+
+        <div class="stage sonnet" id="stage3" onclick="showDetail(3)" style="grid-column:span 1">
+          <div class="stage-num">Step 3 / 6</div>
+          <div class="stage-name">3&times; Video Scripts</div>
+          <span class="stage-model sonnet">Sonnet</span>
+          <span style="font-size:.65rem;color:var(--parallel);font-weight:700;margin-left:.3rem">3 CONCURRENT</span>
+          <div class="stage-desc">Three full scripts run in parallel. Compatible with Pictory AI, InVideo, CapCut.</div>
+        </div>
+
+      </div>
+
+      <!-- Steps 4-5 parallel group -->
+      <div style="background:rgba(167,139,250,.04);border:1.5px dashed rgba(167,139,250,.3);border-radius:10px;padding:.8rem;margin-bottom:.8rem">
+        <div class="parallel-label">
+          <span style="font-size:.9rem">&#8644;</span> Parallel Group &mdash; Steps 4 &amp; 5 run simultaneously
+        </div>
+        <div class="parallel-inner">
+          <div class="stage sonnet" id="stage4" onclick="showDetail(4)" style="margin:0">
+            <div class="stage-num">Step 4 / 6</div>
+            <div class="stage-name">Thumbnail Guide</div>
+            <span class="stage-model sonnet">Sonnet</span>
+            <div class="stage-desc">AI image prompts + Canva walkthrough for each video.</div>
+          </div>
+          <div class="stage haiku" id="stage5" onclick="showDetail(5)" style="margin:0">
+            <div class="stage-num">Step 5 / 6</div>
+            <div class="stage-name">Pinned Comments</div>
+            <span class="stage-model haiku">Haiku</span>
+            <div class="stage-desc">Copy-paste engagement comments for channel growth.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 6 -->
+      <div class="stages-grid">
+        <div class="stage haiku" id="stage6" onclick="showDetail(6)">
+          <div class="stage-num">Step 6 / 6</div>
+          <div class="stage-name">Getting Started Guide</div>
+          <span class="stage-model haiku">Haiku</span>
+          <div class="stage-desc">Step-by-step first-video instructions tailored to the customer's niche.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Submission State Machine ── -->
+  <section>
+    <div class="section-title">
+      <span class="dot" style="background:var(--warning)"></span>
+      Submission State Machine
+    </div>
+    <div class="flow-section">
+      <div class="state-flow">
+        <div class="state-box pending">pending/</div>
+        <span class="state-arrow">&#8594;</span>
+        <div class="state-box processing">processing/</div>
+        <span class="state-arrow">&#8594;</span>
+        <div style="display:flex;flex-direction:column;gap:.5rem">
+          <div class="state-box completed">completed/</div>
+          <div class="state-box failed">failed/</div>
+        </div>
+      </div>
+      <p style="text-align:center;font-size:.75rem;color:var(--text-dim);margin-top:.8rem">
+        JSON files move through <code style="color:var(--teal)">submissions/</code> subdirectories. Each state maps to a directory. Watchdog moves the file atomically before and after processing.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── Request Types ── -->
+  <section>
+    <div class="section-title">
+      <span class="dot" style="background:var(--haiku)"></span>
+      Request Types
+    </div>
+    <div class="req-grid">
+      <div class="req-card">
+        <div class="req-tag full">full_channel_build</div>
+        <div class="req-title">Full Channel Build</div>
+        <div class="req-desc">All 6 pipeline stages. Customer receives the complete 6-file package via email.</div>
+      </div>
+      <div class="req-card">
+        <div class="req-tag niche">niche_research</div>
+        <div class="req-title">Niche Research Only</div>
+        <div class="req-desc">Stage 1 only. Returns niche research report with CPM data and video ideas.</div>
+      </div>
+      <div class="req-card">
+        <div class="req-tag reorder">reorder_scripts</div>
+        <div class="req-title">Reorder Scripts</div>
+        <div class="req-desc">Returning customers use a 6-char reorder code to get new scripts that match their original channel voice. Codes stored in <code style="color:var(--teal)">reorder-codes.json</code>.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Deliverables ── -->
+  <section>
+    <div class="section-title">
+      <span class="dot" style="background:var(--success)"></span>
+      Deliverables (Email Package)
+    </div>
+    <div class="deliverables-grid">
+      <div class="deliverable">
+        <span class="deliverable-format html">HTML</span>
+        <div class="deliverable-name">Getting Started Guide</div>
+        <div class="deliverable-desc">Step-by-step first-video instructions for the customer's niche.</div>
+      </div>
+      <div class="deliverable">
+        <span class="deliverable-format html">HTML</span>
+        <div class="deliverable-name">Niche Research Report</div>
+        <div class="deliverable-desc">CPM data, competition analysis, and video idea bank.</div>
+      </div>
+      <div class="deliverable">
+        <span class="deliverable-format html">HTML</span>
+        <div class="deliverable-name">Channel Blueprint</div>
+        <div class="deliverable-desc">Channel name, brand identity, audience profile, 30-day content calendar.</div>
+      </div>
+      <div class="deliverable">
+        <span class="deliverable-format txt">TXT &times;3</span>
+        <div class="deliverable-name">Video Scripts</div>
+        <div class="deliverable-desc">Three production-ready scripts for Pictory AI, InVideo, or CapCut.</div>
+      </div>
+      <div class="deliverable">
+        <span class="deliverable-format html">HTML</span>
+        <div class="deliverable-name">Thumbnail Guide</div>
+        <div class="deliverable-desc">AI image prompts and Canva walkthroughs per video.</div>
+      </div>
+      <div class="deliverable">
+        <span class="deliverable-format html">HTML</span>
+        <div class="deliverable-name">Pinned Comments</div>
+        <div class="deliverable-desc">Copy-paste engagement comments to drive views and community growth.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Key Files ── -->
+  <section>
+    <div class="section-title">
+      <span class="dot" style="background:var(--parallel)"></span>
+      Key Files
+    </div>
+    <div class="table-wrap">
+      <table class="files-table">
+        <thead>
+          <tr>
+            <th>File</th>
+            <th>Role</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="file-code">poc/watchdog.sh</td>
+            <td class="file-role">Main pipeline orchestrator (~645 lines). All Claude agent prompts and parallelization logic.</td>
+          </tr>
+          <tr>
+            <td class="file-code">index.html</td>
+            <td class="file-role">Landing page + animated 6-station pipeline status overlay (~1250 lines, vanilla JS).</td>
+          </tr>
+          <tr>
+            <td class="file-code">pipeline</td>
+            <td class="file-role">Bash CLI wrapper: <code style="color:var(--teal)">start / stop / restart / status / logs</code></td>
+          </tr>
+          <tr>
+            <td class="file-code">poc/send-email.py</td>
+            <td class="file-role">HTML email assembly with file attachments via Gmail SMTP.</td>
+          </tr>
+          <tr>
+            <td class="file-code">poc/poll-sheets.py</td>
+            <td class="file-role">Google Sheets CSV poller — creates JSON order files in <code style="color:var(--teal)">submissions/pending/</code>.</td>
+          </tr>
+          <tr>
+            <td class="file-code">poc/google-apps-script.js</td>
+            <td class="file-role">Google Sheets webhook. <code style="color:var(--teal)">doPost</code> for submit, <code style="color:var(--teal)">doGet</code> for status polling.</td>
+          </tr>
+          <tr>
+            <td class="file-code">poc/receiver.py</td>
+            <td class="file-role">Local HTTP server — alternative to Google Sheets for receiving orders.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  FCB Pipeline Architecture &mdash; Faceless AI Channel Builder
+</footer>
+
+<script>
+const stageDetails = {
+  1: {
+    title: 'Step 1 — Niche Research (Claude Sonnet)',
+    body: 'Performs deep research on the requested niche. Outputs CPM data, competition analysis, audience demographics, and 10+ video ideas. Web search is enabled via --allowedTools. Output saved as niche_research.html.'
+  },
+  2: {
+    title: 'Step 2 — Channel Blueprint (Claude Sonnet)',
+    body: 'Reads the niche research output, then generates a complete channel identity: name options, brand voice, logo concept, target audience profile, and a 30-day content calendar. Output saved as channel_blueprint.html.'
+  },
+  3: {
+    title: 'Step 3 — Video Scripts x3 (Claude Sonnet — 3 Concurrent)',
+    body: 'Three separate Sonnet instances are launched in parallel (background processes with wait). Each writes a full-length, production-ready script in TXT format compatible with Pictory AI, InVideo, and CapCut. All three must complete before the pipeline advances.'
+  },
+  4: {
+    title: 'Step 4 — Thumbnail Guide (Claude Sonnet)',
+    body: 'Runs in parallel with Step 5. For each of the three scripts, generates an AI image prompt (for Midjourney / DALL-E) and a step-by-step Canva walkthrough. Output saved as thumbnail_guide.html.'
+  },
+  5: {
+    title: 'Step 5 — Pinned Comments (Claude Haiku)',
+    body: 'Runs in parallel with Step 4. Generates copy-paste first-comment templates designed to drive early engagement and views. Haiku is used here for speed and cost efficiency. Output saved as pinned_comments.html.'
+  },
+  6: {
+    title: 'Step 6 — Getting Started Guide (Claude Haiku)',
+    body: 'Final stage. Produces a beginner-friendly HTML guide walking the customer through filming, editing, and uploading their first video — all tailored to their specific niche and the channel blueprint. Output saved as getting_started.html.'
+  }
+};
+
+function showDetail(n) {
+  const panel = document.getElementById('detail-panel');
+  const title = document.getElementById('detail-title');
+  const body = document.getElementById('detail-body');
+  const d = stageDetails[n];
+  if (title.textContent === d.title && panel.classList.contains('visible')) {
+    panel.classList.remove('visible');
+    return;
+  }
+  title.textContent = d.title;
+  body.textContent = d.body;
+  panel.classList.add('visible');
+  panel.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+let simRunning = false;
+async function runSimulation() {
+  if (simRunning) return;
+  simRunning = true;
+  const btn = document.getElementById('simBtn');
+  const progress = document.getElementById('simProgress');
+  const bar = document.getElementById('simBar');
+  btn.textContent = '⏳ Running…';
+  btn.classList.add('running');
+  progress.classList.add('visible');
+  bar.style.width = '0%';
+
+  const stages = [
+    {ids:['stage1'], pct:16, delay:900},
+    {ids:['stage2'], pct:33, delay:800},
+    {ids:['stage3'], pct:55, delay:1000},
+    {ids:['stage4','stage5'], pct:77, delay:800},
+    {ids:['stage6'], pct:100, delay:700}
+  ];
+
+  // Reset all
+  for (let i=1;i<=6;i++) {
+    const el = document.getElementById('stage'+i);
+    el.style.borderTopColor='';el.style.borderRightColor='';
+    el.style.borderBottomColor='';
+  }
+
+  for (const s of stages) {
+    for (const id of s.ids) {
+      const el = document.getElementById(id);
+      el.classList.add('active-sim');
+      el.style.boxShadow='0 0 20px rgba(0,188,212,.4)';
+    }
+    bar.style.width = s.pct + '%';
+    await sleep(s.delay);
+    for (const id of s.ids) {
+      const el = document.getElementById(id);
+      el.classList.remove('active-sim');
+      el.style.boxShadow='';
+      el.style.borderColor='rgba(0,200,83,.5)';
+    }
+    await sleep(200);
+  }
+
+  btn.textContent = '✓ Done';
+  setTimeout(()=>{
+    btn.textContent = '▶ Simulate Run';
+    btn.classList.remove('running');
+    progress.classList.remove('visible');
+    bar.style.width='0%';
+    for (let i=1;i<=6;i++) {
+      document.getElementById('stage'+i).style.borderColor='';
+    }
+    simRunning = false;
+  }, 1800);
+}
+
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+</script>
+</body>
+</html>
