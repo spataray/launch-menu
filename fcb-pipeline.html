@@ -361,13 +361,14 @@
             <th>State</th>
             <th>Niche</th>
             <th>Type</th>
+            <th>Status</th>
             <th>Submitted</th>
             <th>Age</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody id="subs-tbody">
-          <tr><td colspan="6" style="color:var(--text-dim);text-align:center;padding:1.5rem">Loading&hellip;</td></tr>
+          <tr><td colspan="7" style="color:var(--text-dim);text-align:center;padding:1.5rem">Loading&hellip;</td></tr>
         </tbody>
       </table>
     </div>
@@ -814,7 +815,7 @@ function renderSubmissions(subs, now) {
   const items  = [...active, ...done];
 
   if (!items.length) {
-    tbody.innerHTML = '<tr><td colspan="6" style="color:var(--text-dim);text-align:center;padding:1.5rem">No submissions found</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="color:var(--text-dim);text-align:center;padding:1.5rem">No submissions found</td></tr>';
     return;
   }
 
@@ -829,10 +830,24 @@ function renderSubmissions(subs, now) {
     } else if (s.state === 'failed') {
       actions = `<button class="action-btn retry" onclick="apiPost('/retry/${s.filename}')">Retry</button>`;
     }
+    let statusCell = '<span style="color:var(--text-dim);font-size:.72rem">—</span>';
+    if (s.pipeline_message) {
+      const step = s.pipeline_step || 0;
+      const pct  = step >= 7 ? 100 : Math.round(step / 6 * 100);
+      statusCell = `<span style="font-size:.75rem;color:var(--teal)">${s.pipeline_message}</span>`
+        + (step > 0 && step < 7 ? `<div style="margin-top:3px;background:rgba(255,255,255,.06);border-radius:3px;height:4px;width:100px"><div style="height:4px;border-radius:3px;background:var(--teal);width:${pct}%"></div></div>` : '');
+    } else if (s.state === 'pending') {
+      statusCell = '<span style="color:#555;font-size:.72rem">Waiting in queue</span>';
+    } else if (s.state === 'completed') {
+      statusCell = '<span style="color:var(--success);font-size:.72rem">&#10003; Done</span>';
+    } else if (s.state === 'failed') {
+      statusCell = '<span style="color:#ef5350;font-size:.72rem">&#10007; Failed</span>';
+    }
     return `<tr>
       <td><span class="state-badge ${s.state}">${s.state}</span></td>
       <td style="color:var(--text-bright);font-size:.82rem">${s.niche || '—'}</td>
       <td style="color:var(--text-dim);font-size:.75rem">${type}</td>
+      <td>${statusCell}</td>
       <td style="font-size:.75rem;color:var(--text-dim)">${fmtDate(s.submitted_at)}<br>
           <span style="font-size:.65rem;opacity:.7">${maskEmail(s.email)}</span></td>
       <td style="color:var(--text-dim);font-size:.75rem">${age}</td>
