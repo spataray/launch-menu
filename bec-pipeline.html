@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BEC Pipeline Architecture</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   :root{
@@ -567,6 +568,27 @@
     .step .step-name{font-size:.7rem}
     .info-panel{grid-template-columns:1fr}
   }
+
+  /* ── Cost Analytics ── */
+  .cost-radio-label{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:6px 14px;border-radius:20px;cursor:pointer;
+    border:1px solid var(--card-border);background:var(--card-bg);
+    font-size:.85rem;color:var(--text-dim);transition:all .2s;
+    user-select:none;
+  }
+  .cost-radio-label input[type=radio]{display:none}
+  .cost-radio-label:has(input:checked){
+    background:rgba(255,145,0,.15);border-color:var(--orange);
+    color:var(--orange);font-weight:600;
+  }
+  .cost-radio-label:hover{border-color:var(--text-dim);color:var(--text)}
+  .cost-stat-box{
+    background:var(--card-bg);border:1px solid var(--card-border);
+    border-radius:10px;padding:12px 18px;min-width:130px;
+  }
+  .cost-stat-val{font-size:1.5rem;font-weight:700;color:var(--gold)}
+  .cost-stat-lbl{font-size:.75rem;color:var(--text-dim);margin-top:2px}
 </style>
 </head>
 <body>
@@ -765,6 +787,30 @@
 
 <!-- Tooltip -->
 <div class="tooltip" id="tooltip"></div>
+
+<!-- Cost Analytics -->
+<section id="costSection" style="width:100%;max-width:1100px;margin:0 auto 40px;padding:0 20px">
+  <h2 style="font-size:1.4rem;font-weight:700;color:var(--gold);margin-bottom:18px;letter-spacing:.05em">
+    Cost Analytics — BEC Pipeline
+  </h2>
+
+  <!-- View selector -->
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px">
+    <label class="cost-radio-label" data-view="daily"><input type="radio" name="costView" value="daily" checked> Daily</label>
+    <label class="cost-radio-label" data-view="weekly"><input type="radio" name="costView" value="weekly"> Weekly</label>
+    <label class="cost-radio-label" data-view="monthly"><input type="radio" name="costView" value="monthly"> Monthly</label>
+    <label class="cost-radio-label" data-view="perrun"><input type="radio" name="costView" value="perrun"> Per Run</label>
+    <label class="cost-radio-label" data-view="projection"><input type="radio" name="costView" value="projection"> Projection</label>
+  </div>
+
+  <!-- Summary stats -->
+  <div id="costStats" style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:20px"></div>
+
+  <!-- Chart -->
+  <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:20px">
+    <canvas id="costChart" height="100"></canvas>
+  </div>
+</section>
 
 <footer>
   <p>BEC Pipeline Architecture &mdash; Business Execution Central &mdash; YouTube Content Factory</p>
@@ -1439,6 +1485,191 @@
   };
 
   function wait(ms){ return new Promise(r => setTimeout(r, ms)); }
+
+})();
+</script>
+
+<script>
+(function(){
+  // ── Embedded cost data from api-costs.log ──
+  const DAILY = [
+    {"date":"2026-02-12","cost":48.75,"scripts":25,"runs":7,"failed":1},
+    {"date":"2026-02-13","cost":81.90,"scripts":42,"runs":23,"failed":2},
+    {"date":"2026-02-14","cost":120.90,"scripts":58,"runs":24,"failed":0},
+    {"date":"2026-02-15","cost":114.75,"scripts":51,"runs":24,"failed":2},
+    {"date":"2026-02-16","cost":155.25,"scripts":33,"runs":25,"failed":8},
+    {"date":"2026-02-17","cost":58.50,"scripts":24,"runs":24,"failed":0},
+    {"date":"2026-02-18","cost":54.00,"scripts":24,"runs":24,"failed":0},
+    {"date":"2026-02-19","cost":36.00,"scripts":16,"runs":16,"failed":0},
+    {"date":"2026-02-20","cost":51.75,"scripts":23,"runs":23,"failed":0},
+    {"date":"2026-02-21","cost":9.00,"scripts":4,"runs":4,"failed":0},
+    {"date":"2026-02-22","cost":11.25,"scripts":5,"runs":5,"failed":0},
+    {"date":"2026-02-23","cost":11.25,"scripts":5,"runs":5,"failed":0},
+    {"date":"2026-02-24","cost":11.25,"scripts":5,"runs":5,"failed":0},
+    {"date":"2026-02-25","cost":90.00,"scripts":12,"runs":19,"failed":7},
+    {"date":"2026-02-26","cost":27.00,"scripts":12,"runs":12,"failed":0},
+    {"date":"2026-02-27","cost":27.00,"scripts":12,"runs":12,"failed":0},
+    {"date":"2026-02-28","cost":27.00,"scripts":12,"runs":12,"failed":0},
+    {"date":"2026-03-01","cost":27.00,"scripts":12,"runs":12,"failed":0},
+    {"date":"2026-03-02","cost":27.00,"scripts":12,"runs":12,"failed":0},
+    {"date":"2026-03-03","cost":33.75,"scripts":11,"runs":12,"failed":1},
+    {"date":"2026-03-04","cost":27.00,"scripts":12,"runs":12,"failed":0},
+    {"date":"2026-03-05","cost":67.50,"scripts":6,"runs":12,"failed":6},
+    {"date":"2026-03-06","cost":166.50,"scripts":10,"runs":26,"failed":16},
+    {"date":"2026-03-07","cost":4.50,"scripts":2,"runs":2,"failed":0}
+  ];
+
+  // Aggregate into weekly buckets (Mon-Sun)
+  function isoWeek(dateStr) {
+    const d = new Date(dateStr + 'T00:00:00');
+    const day = d.getDay() || 7; // Mon=1..Sun=7
+    d.setDate(d.getDate() - day + 1);
+    return d.toISOString().slice(0,10);
+  }
+  function isoMonth(dateStr){ return dateStr.slice(0,7); }
+
+  function aggregate(data, keyFn) {
+    const map = {};
+    data.forEach(d => {
+      const k = keyFn(d.date);
+      if (!map[k]) map[k] = {label:k, cost:0, scripts:0, runs:0, failed:0};
+      map[k].cost    += d.cost;
+      map[k].scripts += d.scripts;
+      map[k].runs    += d.runs;
+      map[k].failed  += d.failed;
+    });
+    return Object.values(map).sort((a,b)=>a.label.localeCompare(b.label));
+  }
+
+  const WEEKLY  = aggregate(DAILY, isoWeek);
+  const MONTHLY = aggregate(DAILY, isoMonth);
+
+  // Per-run: each daily entry split by runs (approximate cost/run)
+  const PER_RUN = DAILY.map(d => ({
+    label: d.date,
+    cost: d.runs > 0 ? +(d.cost / d.runs).toFixed(2) : 0,
+    scripts: d.runs > 0 ? +(d.scripts / d.runs).toFixed(1) : 0,
+    failed: d.failed
+  }));
+
+  // Projection: last 7 clean days (skip today if partial)
+  const cleanDays = DAILY.slice(0,-1).filter(d => d.failed === 0);
+  const recentClean = cleanDays.slice(-7);
+  const avgDaily = recentClean.length
+    ? recentClean.reduce((s,d) => s+d.cost, 0) / recentClean.length
+    : 27;
+  const projectedMonthly = avgDaily * 30;
+
+  // ── Chart setup ──
+  const ctx = document.getElementById('costChart').getContext('2d');
+  let chart = null;
+
+  function colorBars(data, failKey) {
+    return data.map(d => (failKey && d[failKey] > 0) ? 'rgba(198,40,40,0.7)' : 'rgba(255,145,0,0.75)');
+  }
+
+  function buildDatasets(view) {
+    if (view === 'projection') {
+      const lastDate = new Date(DAILY[DAILY.length-1].date + 'T00:00:00');
+      const labels = [], actual = [], projected = [];
+      DAILY.forEach(d => { labels.push(d.date); actual.push(d.cost); projected.push(null); });
+      for (let i=1; i<=30; i++) {
+        const d = new Date(lastDate); d.setDate(d.getDate()+i);
+        labels.push(d.toISOString().slice(0,10));
+        actual.push(null);
+        projected.push(+avgDaily.toFixed(2));
+      }
+      return {
+        labels,
+        datasets:[
+          { label:'Actual Cost ($)', data:actual, backgroundColor:'rgba(255,145,0,0.75)', borderColor:'rgba(255,145,0,1)', borderWidth:1, type:'bar' },
+          { label:'Projected ($)', data:projected, borderColor:'rgba(100,255,218,0.8)', backgroundColor:'rgba(100,255,218,0.1)', borderWidth:2, type:'line', fill:true, pointRadius:2, tension:0 }
+        ]
+      };
+    }
+
+    const sourceMap = { daily: DAILY, weekly: WEEKLY, monthly: MONTHLY, perrun: PER_RUN };
+    const src = sourceMap[view];
+    const labels = src.map(d => d.label);
+    const costs  = src.map(d => d.cost);
+    const colors = src.map(d => (d.failed > 0) ? 'rgba(198,40,40,0.7)' : 'rgba(255,145,0,0.75)');
+    const borderColors = src.map(d => (d.failed > 0) ? 'rgba(198,40,40,1)' : 'rgba(255,145,0,1)');
+
+    return {
+      labels,
+      datasets:[{
+        label: view === 'perrun' ? 'Avg Cost per Run ($)' : 'Cost ($)',
+        data: costs,
+        backgroundColor: colors,
+        borderColor: borderColors,
+        borderWidth: 1
+      }]
+    };
+  }
+
+  function renderStats(view) {
+    const statsEl = document.getElementById('costStats');
+    const total = DAILY.reduce((s,d)=>s+d.cost,0);
+    const totalScripts = DAILY.reduce((s,d)=>s+d.scripts,0);
+    const failedRuns = DAILY.reduce((s,d)=>s+d.failed,0);
+    const wastedCost = failedRuns * 2.25;
+
+    const statDefs = {
+      daily:      [{v:'$'+total.toFixed(0),l:'Total Spent'},{v:'$'+avgDaily.toFixed(0),l:'Avg Daily (clean)'},{v:'$'+projectedMonthly.toFixed(0),l:'Projected /month'},{v:totalScripts,l:'Scripts Generated'}],
+      weekly:     [{v:'$'+total.toFixed(0),l:'Total Spent'},{v:'$'+(avgDaily*7).toFixed(0),l:'Projected /week'},{v:'$'+projectedMonthly.toFixed(0),l:'Projected /month'},{v:WEEKLY.length,l:'Weeks Tracked'}],
+      monthly:    [{v:'$'+total.toFixed(0),l:'Total Spent'},{v:'$'+projectedMonthly.toFixed(0),l:'Projected /month'},{v:MONTHLY.length,l:'Months Tracked'},{v:totalScripts,l:'Total Scripts'}],
+      perrun:     [{v:'$'+total.toFixed(0),l:'Total Spent'},{v:'$'+wastedCost.toFixed(0),l:'Wasted (failed runs)'},{v:failedRuns,l:'Failed Runs'},{v:'$2.25',l:'Cost per Success'}],
+      projection: [{v:'$'+avgDaily.toFixed(0)+'/day',l:'Avg Daily (clean)'},{v:'$'+(avgDaily*7).toFixed(0),l:'Projected /week'},{v:'$'+projectedMonthly.toFixed(0),l:'Projected /month'},{v:'$'+(projectedMonthly*12).toFixed(0),l:'Projected /year'}]
+    };
+
+    statsEl.innerHTML = '';
+    (statDefs[view]||statDefs.daily).forEach(s => {
+      const el = document.createElement('div');
+      el.className = 'cost-stat-box';
+      el.innerHTML = `<div class="cost-stat-val">${s.v}</div><div class="cost-stat-lbl">${s.l}</div>`;
+      statsEl.appendChild(el);
+    });
+  }
+
+  function renderChart(view) {
+    const data = buildDatasets(view);
+    if (chart) chart.destroy();
+    chart = new Chart(ctx, {
+      type: 'bar',
+      data,
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { labels: { color:'#e0e0e0', font:{size:12} } },
+          tooltip: {
+            callbacks: {
+              label: ctx => {
+                const v = ctx.parsed.y;
+                return v != null ? ` $${v.toFixed(2)}` : '';
+              }
+            }
+          }
+        },
+        scales: {
+          x: { ticks:{color:'#8892a4',maxRotation:45}, grid:{color:'rgba(255,255,255,0.06)'} },
+          y: {
+            ticks:{ color:'#8892a4', callback: v => '$'+v },
+            grid:{ color:'rgba(255,255,255,0.06)' },
+            beginAtZero: true
+          }
+        }
+      }
+    });
+    renderStats(view);
+  }
+
+  // Initial render
+  renderChart('daily');
+
+  // Radio button listeners
+  document.querySelectorAll('input[name="costView"]').forEach(radio => {
+    radio.addEventListener('change', () => renderChart(radio.value));
+  });
 
 })();
 </script>
