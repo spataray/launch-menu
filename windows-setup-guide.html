@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Windows 11 Setup Guide &mdash; Claude Code CLI Dev Environment</title>
+<title>Windows 11 Setup Guide &mdash; Gemini CLI Dev Environment</title>
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   :root{
@@ -90,30 +90,30 @@
     background:rgba(255,255,255,.05);color:var(--text-dim);
   }
 
-  /* ── Claude box ── */
-  .claude-box{
+  /* ── Gemini box ── */
+  .gemini-box{
     background:linear-gradient(135deg,rgba(255,215,0,.05),rgba(188,140,255,.05));
     border:1px solid rgba(255,215,0,.15);border-radius:14px;
     padding:1.5rem;margin:1.5rem 0;
   }
-  .claude-box h3{
+  .gemini-box h3{
     font-size:1.1rem;font-weight:700;color:var(--gold);margin-bottom:.8rem;
     display:flex;align-items:center;gap:.5rem;
   }
-  .claude-box .point{
+  .gemini-box .point{
     display:flex;gap:.8rem;align-items:flex-start;
     margin-bottom:.7rem;
   }
-  .claude-box .point-num{
+  .gemini-box .point-num{
     background:var(--gold);color:#000;font-weight:800;
     min-width:24px;height:24px;border-radius:50%;
     display:flex;align-items:center;justify-content:center;
     font-size:.72rem;flex-shrink:0;margin-top:.1rem;
   }
-  .claude-box .point p{font-size:.85rem;color:var(--text);line-height:1.6}
-  .claude-box .point strong{color:var(--text-bright)}
-  .claude-box a{color:var(--blue);text-decoration:none}
-  .claude-box a:hover{text-decoration:underline}
+  .gemini-box .point p{font-size:.85rem;color:var(--text);line-height:1.6}
+  .gemini-box .point strong{color:var(--text-bright)}
+  .gemini-box a{color:var(--blue);text-decoration:none}
+  .gemini-box a:hover{text-decoration:underline}
 
   /* ── Terminal mockup ── */
   .terminal{
@@ -201,12 +201,12 @@
 
 <header>
   <h1>Windows 11 Setup Guide</h1>
-  <p class="subtitle">Set up your gaming PC for development with Claude Code CLI &mdash; from zero to coding in ~30 minutes</p>
+  <p class="subtitle">Set up your gaming PC for development with Gemini CLI &mdash; from zero to coding in ~30 minutes</p>
   <div class="tags">
     <span class="tag">Windows 11</span>
     <span class="tag">WSL2</span>
     <span class="tag">Node.js</span>
-    <span class="tag">Claude Code CLI</span>
+    <span class="tag">Gemini CLI</span>
     <span class="tag">Git + GitHub</span>
     <span class="tag">VS Code</span>
   </div>
@@ -219,7 +219,7 @@
   <!-- ═══════════════════════════════════════════════ -->
   <!-- INTRO -->
   <!-- ═══════════════════════════════════════════════ -->
-  <div class="claude-box">
+  <div class="gemini-box">
     <h3>&#128640; What This Guide Installs</h3>
     <div class="point">
       <div class="point-num">1</div>
@@ -227,11 +227,11 @@
     </div>
     <div class="point">
       <div class="point-num">2</div>
-      <p><strong>WSL2 + Ubuntu</strong> &mdash; a real Linux terminal inside Windows (required for Claude Code)</p>
+      <p><strong>WSL2 + Ubuntu</strong> &mdash; a real Linux terminal inside Windows (required for Gemini CLI)</p>
     </div>
     <div class="point">
       <div class="point-num">3</div>
-      <p><strong>Node.js LTS</strong> &mdash; JavaScript runtime that powers Claude Code and your projects</p>
+      <p><strong>Node.js LTS</strong> &mdash; JavaScript runtime that powers Gemini CLI and your projects</p>
     </div>
     <div class="point">
       <div class="point-num">4</div>
@@ -243,7 +243,7 @@
     </div>
     <div class="point">
       <div class="point-num">6</div>
-      <p><strong>Claude Code CLI</strong> &mdash; describe what you want in English, Claude writes the code. <a href="gaming-dev-roadmap.html">See what you can build &rarr;</a></p>
+      <p><strong>Gemini CLI</strong> &mdash; describe what you want in English, Gemini writes the code. <a href="gaming-dev-roadmap.html">See what you can build &rarr;</a></p>
     </div>
   </div>
 
@@ -262,8 +262,8 @@
     <div class="roadmap-item" style="--accent:var(--orange)">
       <div class="rm-time">You will need</div>
       <h4>Accounts to Create (Free)</h4>
-      <p>A <strong>GitHub account</strong> (free) for storing your code and collaborating. An <strong>Anthropic account</strong> (free) for Claude Code authentication. Both use browser-based sign-up.</p>
-      <div class="learns"><span>github.com</span><span>claude.ai</span></div>
+      <p>A <strong>GitHub account</strong> (free) for storing your code and collaborating. A <strong>Google account</strong> (free) for Gemini CLI authentication. Both use browser-based sign-up.</p>
+      <div class="learns"><span>github.com</span><span>gemini.google.com</span></div>
     </div>
   </div>
 
@@ -341,7 +341,7 @@
     <div class="roadmap-item" style="--accent:var(--purple)">
       <div class="rm-time">Step 3 &mdash; ~10 minutes (requires reboot)</div>
       <h4>Install WSL2 + Ubuntu</h4>
-      <p>WSL2 (Windows Subsystem for Linux) runs a full Ubuntu Linux environment inside Windows. Claude Code CLI runs inside WSL. This is the biggest step &mdash; it requires a restart.</p>
+      <p>WSL2 (Windows Subsystem for Linux) runs a full Ubuntu Linux environment inside Windows. Gemini CLI runs inside WSL. This is the biggest step &mdash; it requires a restart.</p>
       <div class="terminal">
         <div class="terminal-bar">
           <div class="terminal-dot red"></div>
@@ -399,7 +399,7 @@
     <div class="roadmap-item" style="--accent:var(--teal)">
       <div class="rm-time">Step 4 &mdash; ~3 minutes</div>
       <h4>Install Node.js LTS</h4>
-      <p>Node.js is the JavaScript runtime that powers Claude Code and most web development tools. Install the LTS (Long Term Support) version for stability.</p>
+      <p>Node.js is the JavaScript runtime that powers Gemini CLI and most web development tools. Install the LTS (Long Term Support) version for stability.</p>
       <div class="terminal">
         <div class="terminal-bar">
           <div class="terminal-dot red"></div>
@@ -475,11 +475,11 @@
       <div class="learns"><span>GitHub CLI</span><span>gh commands</span></div>
     </div>
 
-    <!-- Step 7: Claude Code CLI -->
+    <!-- Step 7: Gemini CLI -->
     <div class="roadmap-item" style="--accent:var(--gold)">
       <div class="rm-time">Step 7 &mdash; ~2 minutes</div>
-      <h4>Install Claude Code CLI</h4>
-      <p>This is the tool that changes everything. Claude Code is an AI coding assistant that runs in your terminal. Describe what you want, and it writes the code. Install it globally with npm.</p>
+      <h4>Install Gemini CLI</h4>
+      <p>This is the tool that changes everything. Gemini CLI is an AI coding assistant that runs in your terminal. Describe what you want, and it writes the code. Install it globally with npm.</p>
       <div class="terminal">
         <div class="terminal-bar">
           <div class="terminal-dot red"></div>
@@ -488,15 +488,15 @@
           <span class="terminal-title">PowerShell</span>
         </div>
         <div class="terminal-body">
-          <span class="prompt-ps">PS C:\&gt;</span> <span class="cmd">npm install <span class="flag">-g</span> @anthropic-ai/claude-code</span><br>
+          <span class="prompt-ps">PS C:\&gt;</span> <span class="cmd">npm install <span class="flag">-g</span> @google/gemini-cli</span><br>
           <br>
           <span class="output">added 1 package in 12s</span><br>
           <br>
-          <span class="prompt-ps">PS C:\&gt;</span> <span class="cmd">claude <span class="flag">--version</span></span><br>
+          <span class="prompt-ps">PS C:\&gt;</span> <span class="cmd">gemini <span class="flag">--version</span></span><br>
           <span class="output">1.0.x</span><br>
         </div>
       </div>
-      <div class="learns"><span>Claude Code CLI</span><span>npm global install</span></div>
+      <div class="learns"><span>Gemini CLI</span><span>npm global install</span></div>
     </div>
 
   </div>
@@ -542,11 +542,11 @@
       <div class="learns"><span>gh auth</span><span>git config</span><span>HTTPS auth</span></div>
     </div>
 
-    <!-- Step 9: Claude Code Auth -->
+    <!-- Step 9: Gemini CLI Auth -->
     <div class="roadmap-item" style="--accent:var(--gold)">
       <div class="rm-time">Step 9 &mdash; ~2 minutes</div>
-      <h4>Claude Code Authentication</h4>
-      <p>Run <code>claude</code> for the first time and it opens your browser to sign in with your Anthropic account. Once authenticated, you're ready to build.</p>
+      <h4>Gemini CLI Authentication</h4>
+      <p>Run <code>gemini</code> for the first time and it opens your browser to sign in with your Google account. Once authenticated, you're ready to build.</p>
       <div class="terminal">
         <div class="terminal-bar">
           <div class="terminal-dot red"></div>
@@ -555,21 +555,21 @@
           <span class="terminal-title">PowerShell</span>
         </div>
         <div class="terminal-body">
-          <span class="prompt-ps">PS C:\&gt;</span> <span class="cmd">claude</span><br>
+          <span class="prompt-ps">PS C:\&gt;</span> <span class="cmd">gemini</span><br>
           <br>
-          <span class="output">Welcome to Claude Code!</span><br>
+          <span class="output">Welcome to Gemini CLI!</span><br>
           <span class="output">Opening browser for authentication...</span><br>
           <br>
-          <span class="success">&#10003; Successfully authenticated with Anthropic</span><br>
-          <span class="success">&#10003; Claude Code is ready to use</span><br>
+          <span class="success">&#10003; Successfully authenticated with Google AI</span><br>
+          <span class="success">&#10003; Gemini CLI is ready to use</span><br>
           <br>
           <span class="output">You: </span><span class="cmd">Hello! What can you help me build?</span><br>
           <br>
-          <span class="output">Claude: I can help you build anything &mdash; web apps, Discord bots,</span><br>
+          <span class="output">Gemini: I can help you build anything &mdash; web apps, Discord bots,</span><br>
           <span class="output">        game tools, APIs, and more. Just describe what you want!</span><br>
         </div>
       </div>
-      <div class="learns"><span>OAuth</span><span>Claude Code</span><span>First run</span></div>
+      <div class="learns"><span>OAuth</span><span>Gemini CLI</span><span>First run</span></div>
     </div>
 
   </div>
@@ -606,8 +606,8 @@
           <span class="prompt-ps">PS ...\my-first-bot&gt;</span> <span class="cmd">npm init <span class="flag">-y</span></span><br>
           <span class="output">Wrote to package.json</span><br>
           <br>
-          <span class="comment"># Open Claude Code and start building!</span><br>
-          <span class="prompt-ps">PS ...\my-first-bot&gt;</span> <span class="cmd">claude</span><br>
+          <span class="comment"># Open Gemini CLI and start building!</span><br>
+          <span class="prompt-ps">PS ...\my-first-bot&gt;</span> <span class="cmd">gemini</span><br>
           <span class="output">You: </span><span class="cmd">Build me a Discord bot that responds to /hello</span><br>
         </div>
       </div>
@@ -620,7 +620,7 @@
   <!-- ═══════════════════════════════════════════════ -->
   <div class="section-header"><span class="num">6</span> Bonus &mdash; API Keys for Gaming Projects</div>
 
-  <div class="claude-box">
+  <div class="gemini-box">
     <h3>&#128273; API Keys You'll Want for Gaming Projects</h3>
     <div class="point">
       <div class="point-num">1</div>
@@ -632,7 +632,7 @@
     </div>
     <div class="point">
       <div class="point-num">3</div>
-      <p><strong>Claude API Key (optional)</strong> &mdash; If you want to use the Claude API directly in your apps (not just Claude Code CLI), get a key from <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a>.</p>
+      <p><strong>Gemini API Key (optional)</strong> &mdash; If you want to use the Gemini API directly in your apps (not just Gemini CLI), get a key from <a href="https://ai.google.dev" target="_blank">ai.google.dev</a>.</p>
     </div>
   </div>
 
@@ -662,13 +662,13 @@
     <div class="terminal-body">
       <span class="output">DISCORD_TOKEN=your-bot-token-here</span><br>
       <span class="output">STEAM_API_KEY=your-steam-key-here</span><br>
-      <span class="output">ANTHROPIC_API_KEY=sk-ant-your-key-here</span><br>
+      <span class="output">GEMINI_API_KEY=AIza...-your-key-here</span><br>
     </div>
   </div>
 
   <div class="warn-box">
     <span class="warn-icon">&#9888;</span>
-    <span><strong>Never commit API keys to GitHub!</strong> Always add <code>.env</code> to your <code>.gitignore</code> file. Claude Code will do this automatically when it sets up your project, but double-check by running: <code>echo ".env" >> .gitignore</code></span>
+    <span><strong>Never commit API keys to GitHub!</strong> Always add <code>.env</code> to your <code>.gitignore</code> file. Gemini CLI will do this automatically when it sets up your project, but double-check by running: <code>echo ".env" >> .gitignore</code></span>
   </div>
 
   <!-- ═══════════════════════════════════════════════ -->
@@ -712,8 +712,8 @@
       <span class="prompt-ps">PS C:\&gt;</span> <span class="cmd">gh auth status</span><br>
       <span class="success">&#10003; Logged in to github.com as christopher</span><br>
       <br>
-      <span class="comment"># 7. Claude Code CLI</span><br>
-      <span class="prompt-ps">PS C:\&gt;</span> <span class="cmd">claude <span class="flag">--version</span></span><br>
+      <span class="comment"># 7. Gemini CLI</span><br>
+      <span class="prompt-ps">PS C:\&gt;</span> <span class="cmd">gemini <span class="flag">--version</span></span><br>
       <span class="success">1.0.x</span><br>
       <br>
       <span class="comment"># &#10003; All checks passed &mdash; you're ready to build!</span><br>
@@ -727,14 +727,14 @@
     <li>VS Code installed with WSL extension<span class="check-cmd">code --version</span></li>
     <li>GitHub CLI installed and authenticated<span class="check-cmd">gh auth status</span></li>
     <li>Git identity configured<span class="check-cmd">git config --global user.name</span></li>
-    <li>Claude Code CLI installed and authenticated<span class="check-cmd">claude --version</span></li>
+    <li>Gemini CLI installed and authenticated<span class="check-cmd">gemini --version</span></li>
     <li>Projects folder created<span class="check-cmd">ls ~/Documents/projects</span></li>
   </ul>
 
 </div>
 
 <footer>
-  Windows 11 Setup Guide &mdash; <a href="gaming-dev-roadmap.html">Back to Gaming Dev Roadmap</a> &mdash; Built with Claude Code CLI
+  Windows 11 Setup Guide &mdash; <a href="gaming-dev-roadmap.html">Back to Gaming Dev Roadmap</a> &mdash; Built with Gemini CLI &mdash; April 2026
 </footer>
 
 <script>
@@ -747,7 +747,7 @@ const fadeObserver = new IntersectionObserver((entries) => {
   });
 }, {threshold: 0.1});
 
-document.querySelectorAll('.roadmap-item, .terminal, .claude-box').forEach(el => {
+document.querySelectorAll('.roadmap-item, .terminal, .gemini-box').forEach(el => {
   fadeObserver.observe(el);
 });
 </script>
