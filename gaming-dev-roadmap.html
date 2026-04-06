@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gaming Dev Roadmap &mdash; Gemini CLI + Gaming APIs</title>
+<title>Gaming Dev Roadmap &mdash; Claude Code + Gaming APIs</title>
 <style>
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   :root{
@@ -232,28 +232,28 @@
     transition:width 1s ease;
   }
 
-  /* ── Gemini CLI section ── */
-  .gemini-box{
+  /* ── Claude Code section ── */
+  .claude-box{
     background:linear-gradient(135deg,rgba(255,215,0,.05),rgba(188,140,255,.05));
     border:1px solid rgba(255,215,0,.15);border-radius:14px;
     padding:1.5rem;margin:1.5rem 0;
   }
-  .gemini-box h3{
+  .claude-box h3{
     font-size:1.1rem;font-weight:700;color:var(--gold);margin-bottom:.8rem;
     display:flex;align-items:center;gap:.5rem;
   }
-  .gemini-box .point{
+  .claude-box .point{
     display:flex;gap:.8rem;align-items:flex-start;
     margin-bottom:.7rem;
   }
-  .gemini-box .point-num{
+  .claude-box .point-num{
     background:var(--gold);color:#000;font-weight:800;
     min-width:24px;height:24px;border-radius:50%;
     display:flex;align-items:center;justify-content:center;
     font-size:.72rem;flex-shrink:0;margin-top:.1rem;
   }
-  .gemini-box .point p{font-size:.85rem;color:var(--text);line-height:1.6}
-  .gemini-box .point strong{color:var(--text-bright)}
+  .claude-box .point p{font-size:.85rem;color:var(--text);line-height:1.6}
+  .claude-box .point strong{color:var(--text-bright)}
 
   /* ── Footer ── */
   footer{
@@ -271,9 +271,9 @@
 
 <header>
   <h1>Gaming Dev Roadmap</h1>
-  <p class="subtitle">What Christopher, who is a strategy/RPG gamer can build with Gemini CLI + Gaming APIs</p>
+  <p class="subtitle">What Christopher, who is a strategy/RPG gamer can build with Claude Code CLI + Gaming APIs</p>
   <div class="tags">
-    <span class="tag">Gemini CLI</span>
+    <span class="tag">Claude Code CLI</span>
     <span class="tag">Gaming APIs</span>
     <span class="tag">Discord Bots</span>
     <span class="tag">AI + Gaming</span>
@@ -396,16 +396,16 @@
       <td>In-game overlays, $300M+ paid to creators</td>
     </tr>
     <tr>
-      <td class="api-name"><a href="https://ai.google.dev/" target="_blank">Gemini API (Google)</a></td>
+      <td class="api-name"><a href="https://docs.anthropic.com" target="_blank">Claude API (Anthropic)</a></td>
       <td>AI reasoning, analysis, code generation, natural language</td>
-      <td class="free-yes">Free tier (generous)</td>
+      <td>Free tier + paid</td>
       <td>Beginner</td>
       <td>AI coaches, build advisors, NPC dialogue</td>
     </tr>
   </table>
 
   <!-- ═══════════════════════════════════════════════ -->
-  <!-- PROJECT IDEAS (GAMES) -->
+  <!-- PROJECT IDEAS (tailored to his library) -->
   <!-- ═══════════════════════════════════════════════ -->
   <div class="section-header"><span class="num">2</span> Project Ideas (Matched to His Games)</div>
 
@@ -421,7 +421,7 @@
         <span class="meta-badge difficulty">Beginner-Intermediate</span>
         <span class="meta-badge revenue">$1,000-2,000/mo potential</span>
         <span class="meta-badge time">2-4 weeks to MVP</span>
-        <span class="meta-badge tech">Gemini API + Web App</span>
+        <span class="meta-badge tech">Claude API + Web App</span>
       </div>
       <div class="expand-hint">&#9662; Click for details</div>
       <div class="card-body">
@@ -430,22 +430,28 @@
           <li>r/BaldursGate3 has 1.4M+ members constantly asking "what's the best build for X?"</li>
           <li>He already knows D&amp;D 5e mechanics from playing BG3 &mdash; domain expertise is the hard part</li>
           <li>No good AI-powered build tool exists &mdash; current guides are static articles</li>
-          <li>Gemini API handles the reasoning; he provides the game knowledge</li>
+          <li>Claude API handles the reasoning; he provides the game knowledge</li>
         </ul>
         <h4>How It Works</h4>
         <ul>
           <li>User describes what they want: class fantasy, playstyle, party role</li>
-          <li>Gemini API analyzes D&amp;D 5e rules + BG3-specific mechanics (fed via system prompt)</li>
+          <li>Claude API analyzes D&amp;D 5e rules + BG3-specific mechanics (fed via system prompt)</li>
           <li>Returns: class split, ability scores, feat order, spell selection, equipment priorities</li>
           <li>Patch notes fed as context so recommendations stay current</li>
         </ul>
         <h4>Tech Stack</h4>
         <div class="code-block">Frontend:  HTML/CSS/JS (or React)
 Backend:   Node.js or Python
-AI:        Gemini API (Google AI SDK)
+AI:        Claude API (Anthropic SDK)
 Database:  SQLite or Supabase (save builds)
 Deploy:    Vercel or Railway (free tier)
 Revenue:   $5-10/mo subscription</div>
+        <h4>Monetization</h4>
+        <ul>
+          <li>Free tier: 3 builds/day. Premium: unlimited + save/share builds</li>
+          <li>200 subscribers at $5/mo = $1,000/month</li>
+          <li>Cross-promote on Reddit, Discord, YouTube build guides</li>
+        </ul>
       </div>
     </div>
 
@@ -459,7 +465,7 @@ Revenue:   $5-10/mo subscription</div>
         <span class="meta-badge difficulty">Intermediate</span>
         <span class="meta-badge revenue">$500-1,500/mo potential</span>
         <span class="meta-badge time">4-6 weeks to MVP</span>
-        <span class="meta-badge tech">Gemini API + Game Data</span>
+        <span class="meta-badge tech">Claude API + Game Data</span>
       </div>
       <div class="expand-hint">&#9662; Click for details</div>
       <div class="card-body">
@@ -472,14 +478,14 @@ Revenue:   $5-10/mo subscription</div>
         </ul>
         <h4>How It Works</h4>
         <ul>
-          <li>Feed Gemini a structured database of all units (stats, costs, roles, synergies)</li>
+          <li>Feed Claude a structured database of all units (stats, costs, roles, synergies)</li>
           <li>User picks: faction, opponent faction, gold budget, playstyle preference</li>
-          <li>Gemini returns: army list + tactical explanation ("Skaven struggle vs armor, so Ratling Guns and Plague Catapults are priority")</li>
+          <li>Claude returns: army list + tactical explanation ("Skaven struggle vs armor, so Ratling Guns and Plague Catapults are priority")</li>
           <li>Could integrate with Steam Workshop for mod visibility</li>
         </ul>
         <h4>Tech Stack</h4>
         <div class="code-block">Data:      TWW3 game files (XML/tables, community wikis)
-AI:        Gemini API with unit database in system prompt
+AI:        Claude API with unit database in system prompt
 Frontend:  Web app with faction selector UI
 Deploy:    Vercel or Netlify
 Community: Steam Workshop integration, Reddit promotion</div>
@@ -496,7 +502,7 @@ Community: Steam Workshop integration, Reddit promotion</div>
         <span class="meta-badge difficulty">Intermediate</span>
         <span class="meta-badge revenue">Viral / Ad Revenue</span>
         <span class="meta-badge time">4-8 weeks to MVP</span>
-        <span class="meta-badge tech">Gemini API + File Parsing</span>
+        <span class="meta-badge tech">Claude API + File Parsing</span>
       </div>
       <div class="expand-hint">&#9662; Click for details</div>
       <div class="card-body">
@@ -504,7 +510,7 @@ Community: Steam Workshop integration, Reddit promotion</div>
         <ul>
           <li>Parse save files (BG3 = XML/JSON, Fallout NV = documented format, Cyberpunk = structured)</li>
           <li>Extract: choices made, companions, quests completed, character stats, karma, kill count</li>
-          <li>Gemini generates a personalized narrative: your playthrough told as a story</li>
+          <li>Claude generates a personalized narrative: your playthrough told as a story</li>
           <li>Output is shareable &mdash; image cards, social media posts, Reddit threads</li>
         </ul>
         <h4>Example Output</h4>
@@ -514,6 +520,13 @@ and let Caesar's Legion burn. Boone never forgave you for
 Bitter Springs. Level 34. 847 kills. Karma: Very Evil.
 
 The Mojave remembers what you did."</div>
+        <h4>Why It Goes Viral</h4>
+        <ul>
+          <li>RPG players LOVE sharing their playthroughs &mdash; this gives them a shareable artifact</li>
+          <li>Reddit posts like "AI wrote the story of my BG3 playthrough" would explode</li>
+          <li>Each generated story is unique &mdash; drives repeat use and sharing</li>
+          <li>Expand to more games over time as the parser library grows</li>
+        </ul>
       </div>
     </div>
 
@@ -535,161 +548,91 @@ The Mojave remembers what you did."</div>
         <ul>
           <li><strong>/stats [game] [username]</strong> &mdash; pulls stats from Steam, Riot, or other APIs</li>
           <li><strong>/gamenight</strong> &mdash; polls server, finds best time, creates voice event automatically</li>
-          <li><strong>/build [game] [description]</strong> &mdash; Gemini AI suggests character builds</li>
+          <li><strong>/build [game] [description]</strong> &mdash; Claude AI suggests character builds</li>
+          <li><strong>/session start / end</strong> &mdash; logs ranked progress, posts summary</li>
           <li><strong>/draft</strong> &mdash; organizes custom scrims, assigns teams, tracks brackets</li>
+        </ul>
+        <h4>Monetization Path</h4>
+        <ul>
+          <li>Free tier: basic commands. Premium ($3/mo): AI coaching, unlimited lookups, custom embeds</li>
+          <li>Discord keeps only 10% &mdash; you keep 90% of subscription revenue</li>
+          <li>1,000 servers x 5% premium conversion x $3 = $150/month</li>
+          <li>10,000 servers = $1,500/month</li>
         </ul>
         <h4>Why Start Here</h4>
         <div class="code-block">// This is literally all it takes to start:
 npm init -y
-npm install discord.js @google/generative-ai
-// Gemini CLI writes the rest for you</div>
+npm install discord.js @anthropic-ai/sdk
+// Claude Code writes the rest for you</div>
       </div>
     </div>
 
-  </div>
-
-  <!-- ═══════════════════════════════════════════════ -->
-  <!-- LIFESTYLE & CAREER HACKS -->
-  <!-- ═══════════════════════════════════════════════ -->
-  <div class="section-header"><span class="num">2.5</span> Life &amp; Career Hacks (Modern Interests)</div>
-
-  <div class="project-grid">
-
-    <!-- Project 5: AI Gym Bro -->
-    <div class="project-card" style="--accent:var(--indigo)" onclick="this.classList.toggle('open')">
-      <div class="card-top">
-        <h3>The AI Gym Bro</h3>
-        <div class="card-desc">Generate custom workout splits based on equipment and goals. Exports to a mobile-friendly tracker.</div>
-      </div>
-      <div class="card-meta">
-        <span class="meta-badge difficulty">Beginner</span>
-        <span class="meta-badge revenue">Personal Utility</span>
-        <span class="meta-badge time">1 week</span>
-        <span class="meta-badge tech">Gemini CLI + HTML</span>
-      </div>
-      <div class="expand-hint">&#9662; Click for details</div>
-      <div class="card-body">
-        <h4>The Hook</h4>
-        <p>Instead of searching for routines, he builds his own custom trainer that knows his equipment (or lack thereof).</p>
-        <h4>Gemini Prompt</h4>
-        <div class="code-block">gemini "build a script that asks for my weight and
-goal (bulk/cut) then generates a science-based
-Push-Pull-Legs routine as an HTML page."</div>
-      </div>
-    </div>
-
-    <!-- Project 6: Spotify Vibe Architect -->
-    <div class="project-card" style="--accent:var(--green)" onclick="this.classList.toggle('open')">
-      <div class="card-top">
-        <h3>Spotify Vibe Architect</h3>
-        <div class="card-desc">Describe a mood (e.g., "Cyberpunk rainy night drive") &mdash; AI builds and saves a real playlist to your account.</div>
-      </div>
-      <div class="card-meta">
-        <span class="meta-badge difficulty">Intermediate</span>
-        <span class="meta-badge revenue">Social Factor</span>
-        <span class="meta-badge time">2 weeks</span>
-        <span class="meta-badge tech">Spotify API + Gemini</span>
-      </div>
-      <div class="expand-hint">&#9662; Click for details</div>
-      <div class="card-body">
-        <h4>The Hook</h4>
-        <p>The "lightbulb" moment: seeing code actually interact with a real-world app he uses every day.</p>
-        <h4>Gemini Prompt</h4>
-        <div class="code-block">gemini "create a node.js tool that connects to my 
-Spotify and makes a playlist based on a natural
-language description of a vibe."</div>
-      </div>
-    </div>
-
-    <!-- Project 7: Resume ATS Crusher -->
-    <div class="project-card" style="--accent:var(--blue)" onclick="this.classList.toggle('open')">
-      <div class="card-top">
-        <h3>Resume ATS Crusher</h3>
-        <div class="card-desc">Paste a job post and your resume &mdash; AI identifies the "keyword gaps" and suggests bullet point rewrites.</div>
-      </div>
-      <div class="card-meta">
-        <span class="meta-badge difficulty">Beginner</span>
-        <span class="meta-badge revenue">Career ROI</span>
-        <span class="meta-badge time">1 week</span>
-        <span class="meta-badge tech">Gemini API + Text Proc</span>
-      </div>
-      <div class="expand-hint">&#9662; Click for details</div>
-      <div class="card-body">
-        <h4>The Hook</h4>
-        <p>Solves a real-life problem for a 22-year-old entering the job market. Immediate ROI.</p>
-        <h4>Gemini Prompt</h4>
-        <div class="code-block">gemini "build a web app where I paste a job desc 
-and my resume, then it highlights the 5 skills
-I need to add to pass the ATS filter."</div>
-      </div>
-    </div>
-
-    <!-- Project 8: AI Wealth Notifier -->
-    <div class="project-card" style="--accent:var(--orange)" onclick="this.classList.toggle('open')">
-      <div class="card-top">
-        <h3>AI Wealth Notifier</h3>
-        <div class="card-desc">Monitors SOL/BTC or stocks and pings Discord when sentiment or price targets hit a threshold.</div>
-      </div>
-      <div class="card-meta">
-        <span class="meta-badge difficulty">Intermediate</span>
-        <span class="meta-badge revenue">Wealth Building</span>
-        <span class="meta-badge time">2 weeks</span>
-        <span class="meta-badge tech">Market APIs + Discord</span>
-      </div>
-      <div class="expand-hint">&#9662; Click for details</div>
-      <div class="card-body">
-        <h4>The Hook</h4>
-        <p>Combines "hustle culture" interests with real-time data automation. Makes him the "informed one" in the group chat.</p>
-        <h4>Gemini Prompt</h4>
-        <div class="code-block">gemini "build a bot that checks the price of SOL
-every hour and pings my Discord if it drops
-more than 5% or if a big news story drops."</div>
-      </div>
-    </div>
-
-    <!-- Project 9: AI Date Night Planner -->
-    <div class="project-card" style="--accent:var(--pink)" onclick="this.classList.toggle('open')">
-      <div class="card-top">
-        <h3>AI Date Night Planner</h3>
-        <div class="card-desc">Enter a budget and a vibe (e.g. "Lowkey but cool") &mdash; AI finds local spots and plans the whole night.</div>
-      </div>
-      <div class="card-meta">
-        <span class="meta-badge difficulty">Beginner</span>
-        <span class="meta-badge revenue">Social / Utility</span>
-        <span class="meta-badge time">1 week</span>
-        <span class="meta-badge tech">Gemini API + Maps API</span>
-      </div>
-      <div class="expand-hint">&#9662; Click for details</div>
-      <div class="card-body">
-        <h4>The Hook</h4>
-        <p>Practical social utility. No more "I don't know, what do you want to do?"</p>
-        <h4>Gemini Prompt</h4>
-        <div class="code-block">gemini "create a tool that takes a city and a budget
-then uses Gemini to suggest a 3-stop date night
-(drinks, food, activity) with local links."</div>
-      </div>
-    </div>
-
-    <!-- Project 10: Local Event Scraper -->
+    <!-- Project 5: Steam Library Analyzer -->
     <div class="project-card" style="--accent:var(--teal)" onclick="this.classList.toggle('open')">
       <div class="card-top">
-        <h3>Local Event Scraper</h3>
-        <div class="card-desc">Scrapes local event sites and summarizes the top 3 things happening tonight into a terminal view.</div>
+        <h3>Steam Library Analyzer + Recommender</h3>
+        <div class="card-desc">Paste your Steam profile URL &mdash; get a full analysis of your gaming habits, unplayed games, achievement rarity, and AI-powered "play next" recommendations.</div>
       </div>
       <div class="card-meta">
-        <span class="meta-badge difficulty">Intermediate</span>
-        <span class="meta-badge revenue">Social Intel</span>
-        <span class="meta-badge time">2 weeks</span>
-        <span class="meta-badge tech">Puppeteer + Gemini API</span>
+        <span class="meta-badge difficulty">Beginner</span>
+        <span class="meta-badge revenue">Side income (ads)</span>
+        <span class="meta-badge time">1-2 weeks</span>
+        <span class="meta-badge tech">Steam API + Claude API</span>
       </div>
       <div class="expand-hint">&#9662; Click for details</div>
       <div class="card-body">
-        <h4>The Hook</h4>
-        <p>Automation at its best. He never misses a concert or a pop-up event again.</p>
-        <h4>Gemini Prompt</h4>
-        <div class="code-block">gemini "build a script that scrapes local event sites
-and uses Gemini to pick the 3 coolest things
-happening tonight based on my interests."</div>
+        <h4>Features</h4>
+        <ul>
+          <li>Pull entire game library, playtime per game, achievements</li>
+          <li>"Shame shelf" &mdash; games owned but never played (sorted by price paid)</li>
+          <li>Achievement rarity tracker &mdash; how rare are your completions vs global stats</li>
+          <li>AI recommender: "Based on your 200 hours in BG3 and 150 in TW:WH3, try Divinity: Original Sin 2"</li>
+          <li>Friend comparison: "You and [friend] both own 47 games &mdash; here's what only you've played"</li>
+        </ul>
+        <h4>Why It's a Great First Project</h4>
+        <ul>
+          <li>Steam API is the easiest gaming API &mdash; instant key, simple REST endpoints</li>
+          <li>He builds something he immediately uses on his own account</li>
+          <li>Natural conversation starter: "check out what this tool says about your Steam library"</li>
+          <li>Portfolio piece that demonstrates API integration + AI</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Project 6: Overwolf Overlay -->
+    <div class="project-card" style="--accent:var(--orange)" onclick="this.classList.toggle('open')">
+      <div class="card-top">
+        <h3>Overwolf In-Game Overlay App</h3>
+        <div class="card-desc">Build an in-game overlay using HTML/CSS/JS. Overwolf handles distribution and monetization. They paid out $300M+ to creators in 2024.</div>
+      </div>
+      <div class="card-meta">
+        <span class="meta-badge difficulty">Intermediate</span>
+        <span class="meta-badge revenue">$500-5,000/mo potential</span>
+        <span class="meta-badge time">2-4 months</span>
+        <span class="meta-badge tech">HTML/CSS/JS + Overwolf SDK</span>
+      </div>
+      <div class="expand-hint">&#9662; Click for details</div>
+      <div class="card-body">
+        <h4>What Overwolf Is</h4>
+        <ul>
+          <li>A platform specifically for in-game overlay apps &mdash; like browser extensions but for games</li>
+          <li>You build with web tech (HTML, CSS, JavaScript) &mdash; no game engine needed</li>
+          <li>They handle app store distribution, auto-updates, and ad monetization</li>
+          <li>Revenue share: 70-80% to you. Tracker.gg is built on this platform.</li>
+        </ul>
+        <h4>Overlay Ideas for His Games</h4>
+        <ul>
+          <li><strong>Total War: Warhammer</strong> &mdash; unit counter-picker overlay during army selection</li>
+          <li><strong>BG3-adjacent</strong> &mdash; D&amp;D spell reference overlay for tabletop sessions streamed on Discord</li>
+          <li><strong>General</strong> &mdash; AI gaming assistant overlay that answers questions about any game in real-time</li>
+        </ul>
+        <h4>The Revenue Math</h4>
+        <ul>
+          <li>Overwolf apps earn primarily through in-app ads (displayed between game sessions)</li>
+          <li>Average eCPM: $5-15 depending on region and game</li>
+          <li>10,000 daily active users x $8 eCPM = ~$2,400/month</li>
+          <li>This is the most accessible path to serious passive income for a solo dev</li>
+        </ul>
       </div>
     </div>
 
@@ -702,58 +645,96 @@ happening tonight based on my interests."</div>
 
   <div class="roadmap">
     <div class="roadmap-item" style="--accent:var(--teal)">
-      <div class="rm-time">Week 1 &mdash; The First Win</div>
-      <h4>The AI Gym Bro</h4>
-      <p>His first project. No complex APIs, just basic logic and HTML export. He uses Gemini CLI to write the entire thing in one sitting. High dopamine, low barrier.</p>
-      <div class="learns"><span>CLI usage</span><span>Gemini Prompts</span><span>HTML/CSS</span></div>
+      <div class="rm-time">Week 1-2 &mdash; Learn by Building</div>
+      <h4>Steam Library Analyzer</h4>
+      <p>Pull his own game data from Steam API. Build a simple web page that shows playtime stats, unplayed games, and a "what to play next" AI recommendation. He uses Claude Code CLI to write the entire thing &mdash; learns by doing, not by reading tutorials.</p>
+      <div class="learns"><span>API basics</span><span>Claude Code workflow</span><span>JSON handling</span><span>HTML/CSS</span></div>
     </div>
     <div class="roadmap-item" style="--accent:var(--blue)">
-      <div class="rm-time">Week 2-3 &mdash; Connecting to the World</div>
-      <h4>Discord Bot or Spotify Tool</h4>
-      <p>Learn how code talks to other apps. Setting up an API key, handling authentication, and seeing a real-world reaction (a message in Discord or a new playlist).</p>
-      <div class="learns"><span>API Basics</span><span>OAuth</span><span>JSON</span><span>Async logic</span></div>
+      <div class="rm-time">Week 2-3 &mdash; First Real Tool</div>
+      <h4>Discord Bot for His Friend Group</h4>
+      <p>Build a bot his friends actually use. Start with /stats commands that pull Steam data, then add a /build command powered by Claude API for BG3 character advice. Deploy on Railway free tier.</p>
+      <div class="learns"><span>Discord.js</span><span>Claude API</span><span>Slash commands</span><span>Deployment</span></div>
     </div>
     <div class="roadmap-item" style="--accent:var(--purple)">
-      <div class="rm-time">Month 2 &mdash; Building for Others</div>
-      <h4>The BG3 Build Optimizer</h4>
-      <p>Combine game passion with technical skill. A more complex tool with a database to save user builds. This is when he realizes he can build a "product."</p>
-      <div class="learns"><span>Databases</span><span>Deployment</span><span>User UI/UX</span></div>
+      <div class="rm-time">Month 2 &mdash; First Monetizable Project</div>
+      <h4>BG3 Build Optimizer (Web App)</h4>
+      <p>Turn the Discord bot's /build command into a full web app. Add a database to save builds, a sharing system, and a premium tier. Post to r/BaldursGate3 for initial traction.</p>
+      <div class="learns"><span>Web dev</span><span>Database</span><span>Auth/payments</span><span>User feedback</span></div>
+    </div>
+    <div class="roadmap-item" style="--accent:var(--gold)">
+      <div class="rm-time">Month 3-6 &mdash; Scale or Pivot</div>
+      <h4>Choose Your Path</h4>
+      <p>Based on what worked: scale the build optimizer to more games (Cyberpunk, Dragon Age), build an Overwolf overlay, or pivot to the RPG Save Storyteller if the viral angle is more exciting. By this point he has real skills and a portfolio.</p>
+      <div class="learns"><span>Product thinking</span><span>Growth</span><span>Monetization</span><span>Portfolio</span></div>
     </div>
   </div>
 
   <!-- ═══════════════════════════════════════════════ -->
-  <!-- GEMINI CLI ADVANTAGE -->
+  <!-- REVENUE POTENTIAL -->
   <!-- ═══════════════════════════════════════════════ -->
-  <div class="section-header"><span class="num">4</span> Why Gemini CLI Is the Cheat Code</div>
+  <div class="section-header"><span class="num">4</span> Revenue Potential (12-Month View)</div>
 
-  <div class="gemini-box">
-    <h3>&#9889; How Gemini CLI Bridges the Gap for Christopher</h3>
+  <div class="revenue-grid">
+    <div class="revenue-card" style="--accent:var(--blue)">
+      <div class="rev-type">Discord Bot (Premium)</div>
+      <div class="rev-amount">$2,000</div>
+      <div class="rev-desc">10,000 servers<br>5% conversion at $3/mo</div>
+      <div class="rev-bar"><div class="rev-bar-fill" style="width:40%;background:var(--blue)"></div></div>
+    </div>
+    <div class="revenue-card" style="--accent:var(--purple)">
+      <div class="rev-type">Build Optimizer SaaS</div>
+      <div class="rev-amount">$2,000</div>
+      <div class="rev-desc">400 subscribers<br>$5/month each</div>
+      <div class="rev-bar"><div class="rev-bar-fill" style="width:40%;background:var(--purple)"></div></div>
+    </div>
+    <div class="revenue-card" style="--accent:var(--orange)">
+      <div class="rev-type">Overwolf Overlay</div>
+      <div class="rev-amount">$5,000</div>
+      <div class="rev-desc">10K daily users<br>ad revenue share</div>
+      <div class="rev-bar"><div class="rev-bar-fill" style="width:100%;background:var(--orange)"></div></div>
+    </div>
+    <div class="revenue-card" style="--accent:var(--green)">
+      <div class="rev-type">Roblox Game</div>
+      <div class="rev-amount">$100K+</div>
+      <div class="rev-desc">Top ceiling<br>if game hits</div>
+      <div class="rev-bar"><div class="rev-bar-fill" style="width:100%;background:var(--green)"></div></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- CLAUDE CODE ADVANTAGE -->
+  <!-- ═══════════════════════════════════════════════ -->
+  <div class="section-header"><span class="num">5</span> Why Claude Code Is the Cheat Code</div>
+
+  <div class="claude-box">
+    <h3>&#9889; What Claude Code CLI Changes for a Beginner</h3>
     <div class="point">
       <div class="point-num">1</div>
-      <p><strong>Level 1: The Creator Prompt.</strong> Start a project from thin air. <br><code>gemini "build a web app that tracks my daily water intake and shows a chart"</code></p>
+      <p><strong>Describe what you want in plain English.</strong> "Build me a Discord bot that pulls my Steam stats and tells me which achievement is rarest." Claude writes the code.</p>
     </div>
     <div class="point">
       <div class="point-num">2</div>
-      <p><strong>Level 2: The Logic Prompt.</strong> Add brains to your code. <br><code>gemini "connect this to the Gemini API so it can give me motivational quotes when I'm behind on my goals"</code></p>
+      <p><strong>Claude handles the boring parts.</strong> API authentication, rate limiting, error handling, database setup, deployment config. He focuses on the game logic he already understands.</p>
     </div>
     <div class="point">
       <div class="point-num">3</div>
-      <p><strong>Level 3: The Refactor Prompt.</strong> Fix anything instantly. <br><code>gemini "my chart is looking ugly, rewrite the CSS to make it look like a Cyberpunk 2077 interface"</code></p>
+      <p><strong>Working bot in a single session.</strong> Not weeks of tutorials. Not "hello world." A real tool his friends use, built in one afternoon.</p>
     </div>
     <div class="point">
       <div class="point-num">4</div>
-      <p><strong>Strategy Gamers Are Natural Coders.</strong> He already thinks in systems: army comps, build orders, resource management. Gemini CLI just translates that logic into working software.</p>
+      <p><strong>Claude API becomes a building block.</strong> Every project above gets smarter with an AI layer. Build advisor? Claude API. Save file storyteller? Claude API. The AI isn't just the tool &mdash; it's the product.</p>
     </div>
     <div class="point">
       <div class="point-num">5</div>
-      <p><strong>Zero Setup "Grind".</strong> In games, grinding level 1 is boring. In code, setting up environments is level 1. Gemini CLI lets him skip to level 50 instantly.</p>
+      <p><strong>Strategy gamers already think in systems.</strong> Army compositions, build orders, resource management &mdash; that IS programming logic. Claude Code bridges the gap between game knowledge and code.</p>
     </div>
   </div>
 
 </div>
 
 <footer>
-  Gaming Dev Roadmap &mdash; Built with Gemini CLI &mdash; April 2026
+  Gaming Dev Roadmap &mdash; Built with Claude Code CLI &mdash; February 2026
 </footer>
 
 <script>
