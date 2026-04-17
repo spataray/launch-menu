@@ -771,7 +771,7 @@
     <ul>
       <li><span class="icon" style="background:var(--success)"></span>Line count: 128&ndash;160 narration lines</li>
       <li><span class="icon" style="background:var(--success)"></span>Word count: &le;1,250 words</li>
-      <li><span class="icon" style="background:var(--success)"></span>Title format: odd number + emotional parenthetical</li>
+      <li><span class="icon" style="background:var(--success)"></span>Title format: odd number + topic only (no parenthetical tags)</li>
       <li><span class="icon" style="background:var(--success)"></span>Hook: visceral pain point in first 5&ndash;8 seconds</li>
       <li><span class="icon" style="background:var(--success)"></span>Channel intro line present</li>
       <li><span class="icon" style="background:var(--success)"></span>Mid-video CTA at ~50% mark</li>
@@ -918,7 +918,7 @@
         desc:'Comprehensive binary checklist validation. Every required structural element must be present and correctly formatted.',
         items:[
           'Model: Claude Haiku (~$0.02)',
-          'Checks: title format (odd number + parenthetical)',
+          'Checks: title format (odd number + topic only — no parenthetical tags)',
           'Checks: hook with visceral pain point (lines 2-8)',
           'Checks: channel intro line present',
           'Checks: mid-video CTA at ~50% mark',
@@ -1099,10 +1099,11 @@
     {
       name:'Title', lines:'1', pct:1, color:'#aa00ff',
       rules:[
-        'Format: [Number] [Topic] ([Emotional Parenthetical])',
+        'Format: [Number] [Topic] — odd number + topic ONLY',
         'Use odd numbers only: 5, 7, or 9',
+        'NO parenthetical tags — (Exposed), (Hard Truth), (Brutal) are BANNED',
         'Under 60 characters total',
-        'Example: "5 Signs You\'re Addicted to Comfort (And It\'s Costing You Everything)"'
+        'Example: "5 Signs You\'re Addicted to Comfort"'
       ]
     },
     {
@@ -1120,20 +1121,21 @@
       rules:[
         'Cost list: 5 specific costs (not bulleted)',
         'Psychological truth (pattern interrupt)',
-        'Guru-busting line (attack bad advice)',
-        '"Let\'s break it down." transition',
-        'Triple qualifier setup before the list begins'
+        'Guru-busting line (challenges conventional advice)',
+        'Transition into list — phrasing varies, no fixed template',
+        'BANNED: "Let\'s break it down." and "Here\'s the truth most X won\'t tell you"'
       ]
     },
     {
-      name:'The List', lines:'~75', pct:65, color:'var(--orange)',
+      name:'The List', lines:'~100', pct:65, color:'var(--orange)',
       rules:[
         'BULK of the script \u2014 numbered items with provocative titles',
-        '5-item: max 15 lines/item (75 total) \u2014 94% pass rate',
-        '7-item: max 10 lines/item (70 total) \u2014 42% pass rate',
-        '9-item: max 8 lines/item (72 total) \u2014 0% pass rate, NEVER approve',
-        'Each item: teaser + title + explanation (2-3 lines) + bullets (3 max) + scenario OR "Ask yourself:" + quotable closer',
-        'Mid-video CTA required at 50% mark',
+        '5-item: max 20 lines/item (100 total) \u2014 94% pass rate \u2714 Recommended',
+        '7-item: max 15 lines/item (105 total) \u2014 42% pass rate \u26A0 Risky',
+        '9-item: max 11 lines/item (99 total) \u2014 0% pass rate \u274C NEVER approve',
+        'Each item: teaser + title + explanation (3-4 lines) + bullets (3 max, * format) + micro-story (2-3 lines) + quotable closer',
+        'Bullets: blank line between each item, * format, max 3 per numbered item',
+        'Mid-video CTA required at ~50% mark (phrasing varies per video)',
         '1-2 micro-stories spread across items (present tense, sensory detail)',
         'Pattern interrupts at 30%, 50%, 70% marks'
       ]
@@ -1263,9 +1265,9 @@
 
   // ── Pass Rate ──
   const passRates = [
-    {items:5, rate:94, lines:'max 15/item = 75 + 36 framing = 111', verdict:'Recommended', verdictClass:'verdict-recommended', color:'var(--success)'},
-    {items:7, rate:42, lines:'max 10/item = 70 + 36 framing = 106', verdict:'Risky', verdictClass:'verdict-risky', color:'var(--warning)'},
-    {items:9, rate:0, lines:'max 8/item = 72 + 36 framing = 108', verdict:'Never', verdictClass:'verdict-never', color:'var(--danger)'}
+    {items:5, rate:94, lines:'max 20/item = 100 + 36 framing = 136', verdict:'Recommended', verdictClass:'verdict-recommended', color:'var(--success)'},
+    {items:7, rate:42, lines:'max 15/item = 105 + 36 framing = 141', verdict:'Risky', verdictClass:'verdict-risky', color:'var(--warning)'},
+    {items:9, rate:0, lines:'max 11/item = 99 + 36 framing = 135', verdict:'Never', verdictClass:'verdict-never', color:'var(--danger)'}
   ];
 
   const passRateRows = document.getElementById('passRateRows');
@@ -1292,9 +1294,9 @@
   // Line budget cards
   const lineBudgetGrid = document.getElementById('lineBudgetGrid');
   const budgets = [
-    {items:'5 Items', calc:'15 lines/item \u00d7 5\n+ 36 framing lines\n= 111 total', label:'94% pass rate'},
-    {items:'7 Items', calc:'10 lines/item \u00d7 7\n+ 36 framing lines\n= 106 total', label:'42% pass rate'},
-    {items:'9 Items', calc:'8 lines/item \u00d7 9\n+ 36 framing lines\n= 108 total', label:'0% pass rate'}
+    {items:'5 Items', calc:'20 lines/item \u00d7 5\n+ 36 framing lines\n= 136 total', label:'94% pass rate'},
+    {items:'7 Items', calc:'15 lines/item \u00d7 7\n+ 36 framing lines\n= 141 total', label:'42% pass rate'},
+    {items:'9 Items', calc:'11 lines/item \u00d7 9\n+ 36 framing lines\n= 135 total', label:'0% pass rate'}
   ];
   budgets.forEach(b => {
     const card = document.createElement('div');
@@ -1329,16 +1331,13 @@
   // ── Daily Timeline ──
   const timelineData = [
     {time:'07:00', event:'Morning Email Delivery', detail:'Send previous day\'s A+ scripts to spataray@gmail.com. Increment process day counter.', active:true},
-    {time:'08:00', event:'Cron Run #1', detail:'First orchestrator run. Generate 1 script through full 7-step pipeline.', active:false},
-    {time:'09:15', event:'Cron Run #2', detail:'Second generation cycle. Pipeline takes ~8-10 min per script.', active:false},
-    {time:'10:30', event:'Cron Run #3', detail:'Continue production. ~80% of runs produce an A+ script.', active:false},
-    {time:'11:45', event:'Cron Run #4', detail:'Mid-morning batch. Failed scripts saved as NEEDS-REVIEW.', active:false},
-    {time:'13:00', event:'Cron Run #5\u20136', detail:'Post-lunch runs. 2 more attempts. Errors logged to logs/errors.log.', active:false},
-    {time:'15:00', event:'Cron Run #7\u20138', detail:'Afternoon production. Token budget monitored.', active:false},
-    {time:'17:00', event:'Cron Run #9\u201310', detail:'Late afternoon. Check for 3-consecutive-failure stops.', active:false},
-    {time:'19:00', event:'Cron Run #11', detail:'Evening run. Most scripts should be complete by now.', active:false},
-    {time:'21:00', event:'Cron Run #12 (Final)', detail:'Last run of the day. Save all progress. Prepare for morning email.', active:false},
-    {time:'22:00', event:'End of Day', detail:'12 runs complete. ~10 usable A+ scripts produced. Ready for next morning email.', active:true}
+    {time:'08:00', event:'Cron Run #1', detail:'First orchestrator run. Generates 1 script through full 7-step pipeline (~8-9 min). Per-run email sent on completion.', active:false},
+    {time:'11:00', event:'Cron Run #2', detail:'Mid-morning run. ~80% success rate per run. Failed scripts saved as NEEDS-REVIEW.', active:false},
+    {time:'14:00', event:'Cron Run #3', detail:'Afternoon run. Errors logged to logs/errors.log. MAX_ATTEMPTS=2 per orchestrator call.', active:false},
+    {time:'17:00', event:'Cron Run #4', detail:'Late afternoon run. Per-run status email sent after each attempt (pass or fail).', active:false},
+    {time:'20:00', event:'Cron Run #5', detail:'Evening run. Token budget monitored. 3-consecutive-failure triggers pipeline stop.', active:false},
+    {time:'23:00', event:'Cron Run #6 (Final)', detail:'Last run of the day. Save all progress. Prepare for morning email.', active:false},
+    {time:'23:59', event:'End of Day', detail:'6 runs complete. ~5-6 usable A+ scripts produced. Ready for next morning email.', active:true}
   ];
 
   const timeline = document.getElementById('timeline');
@@ -1355,10 +1354,10 @@
 
   const timelineStats = document.getElementById('timelineStats');
   const stats = [
-    {value:'12', label:'Cron Runs/Day'},
+    {value:'6', label:'Cron Runs/Day'},
     {value:'~80%', label:'Success Rate'},
-    {value:'~10', label:'Scripts/Day'},
-    {value:'~$18', label:'Daily Cost'},
+    {value:'~5\u20136', label:'Scripts/Day'},
+    {value:'~$14', label:'Daily Cost'},
   ];
   stats.forEach(s => {
     const el = document.createElement('div');
