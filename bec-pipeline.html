@@ -733,14 +733,14 @@
 
   <!-- Line Budget -->
   <div class="info-card">
-    <h4>Line Budget (Pictory ~4.5s/line)</h4>
+    <h4>Line Budget (ElevenLabs/CapCut ~3.8s/line)</h4>
     <ul>
-      <li><span class="icon" style="background:var(--success)"></span>Target: <strong style="color:var(--success)">107&ndash;120</strong> narration lines</li>
-      <li><span class="icon" style="background:var(--warning)"></span>Hard limit: <strong style="color:var(--warning)">133</strong> lines / <strong style="color:var(--warning)">1,050</strong> words</li>
+      <li><span class="icon" style="background:var(--success)"></span>Target: <strong style="color:var(--success)">128&ndash;143</strong> narration lines</li>
+      <li><span class="icon" style="background:var(--warning)"></span>Hard limit: <strong style="color:var(--warning)">160</strong> lines / <strong style="color:var(--warning)">1,250</strong> words</li>
       <li><span class="icon" style="background:var(--sonnet)"></span>Target duration: 8&ndash;9 min (max 10 min)</li>
       <li><span class="icon" style="background:var(--text-dim)"></span>First drafts avg 350&ndash;410 lines (budget for trimming pass)</li>
       <li><span class="icon" style="background:var(--haiku)"></span>Early length check saves ~$0.50 per overlong script</li>
-      <li><span class="icon" style="background:var(--orange)"></span>Word budget: 800&ndash;1,000 target</li>
+      <li><span class="icon" style="background:var(--orange)"></span>Word budget: 900&ndash;1,150 target</li>
     </ul>
   </div>
 
@@ -769,8 +769,8 @@
   <div class="info-card">
     <h4>QA Checklist (Required for PASS)</h4>
     <ul>
-      <li><span class="icon" style="background:var(--success)"></span>Line count: 107&ndash;133 narration lines</li>
-      <li><span class="icon" style="background:var(--success)"></span>Word count: &le;1,050 words</li>
+      <li><span class="icon" style="background:var(--success)"></span>Line count: 128&ndash;160 narration lines</li>
+      <li><span class="icon" style="background:var(--success)"></span>Word count: &le;1,250 words</li>
       <li><span class="icon" style="background:var(--success)"></span>Title format: odd number + emotional parenthetical</li>
       <li><span class="icon" style="background:var(--success)"></span>Hook: visceral pain point in first 5&ndash;8 seconds</li>
       <li><span class="icon" style="background:var(--success)"></span>Channel intro line present</li>
@@ -823,13 +823,13 @@
   const steps = [
     {
       num:1, name:'Generate', model:'sonnet', cost:'~$0.80',
-      tip:'Create script draft via Claude Sonnet. Enforce 107-120 lines. Must include 1-2 micro-stories, max 2 amplification beats, confrontational CTA.',
+      tip:'Create script draft via Claude Sonnet. Enforce 128-143 lines. Must include 1-2 micro-stories, max 2 amplification beats, confrontational CTA.',
       detail:{
         title:'Script Generation',
-        desc:'The generator reads BEC-Script-Agent-Instructions.md and 2-3 existing A+ scripts as benchmarks, then produces a full draft enforcing the 107-120 line target.',
+        desc:'The generator reads BEC-Script-Agent-Instructions.md and 2-3 existing A+ scripts as benchmarks, then produces a full draft enforcing the 128-143 line target.',
         items:[
           'Model: Claude Sonnet (~$0.80 per generation)',
-          'Target: 107-120 narration lines, 800-1,000 words',
+          'Target: 128-143 narration lines, 900-1,150 words',
           'Must follow 5-section structure: Title, Hook, Stakes, List, Closing',
           'Include 1-2 micro-stories with present tense and sensory detail',
           'Max 2 amplification beats, rotated from 8-phrase bank',
@@ -842,31 +842,31 @@
     },
     {
       num:2, name:'Length Check', model:'haiku', cost:'~$0.01',
-      tip:'FAIL if >133 narration lines or >1,050 words. Early rejection saves ~$0.50 in downstream review costs. Claude Haiku.',
+      tip:'FAIL if >160 narration lines or >1,250 words. Early rejection saves ~$0.50 in downstream review costs. Claude Haiku.',
       detail:{
         title:'Length Validation',
         desc:'A cheap, fast check using Claude Haiku. Catches overlong scripts before expensive review, saving ~$0.50 per rejection.',
         items:[
           'Model: Claude Haiku (~$0.01)',
-          'PASS if: \u2264133 narration lines AND \u22641,050 words',
-          'FAIL if: >133 lines OR >1,050 words',
+          'PASS if: \u2264160 narration lines AND \u22641,250 words',
+          'FAIL if: >160 lines OR >1,250 words',
           'On FAIL: return to Generator for trimming (1 retry)',
-          'Counts only narration lines (excludes blank lines, stage directions)',
-          'Pictory timing: ~4.5 seconds per line',
-          '133 lines \u00d7 4.5s = ~10 min (hard max for video length)'
+          'Counts total lines including blank lines (ElevenLabs/CapCut treat them as scene breaks)',
+          'ElevenLabs/CapCut timing: ~3.8 seconds per line (calibrated Apr 2026)',
+          '160 lines \u00d7 3.8s = ~10m 08s (hard max for video length)'
         ]
       }
     },
     {
       num:3, name:'Review', model:'sonnet', cost:'~$0.50',
-      tip:'12-dimension detailed review: hook, retention, originality, AI detection, emotional impact, actionability, Pictory compatibility, CTR, shareability, CTA strength, amplification variety, micro-story quality.',
+      tip:'12-dimension detailed review: hook, retention, originality, AI detection, emotional impact, actionability, CapCut compatibility, CTR, shareability, CTA strength, amplification variety, micro-story quality.',
       detail:{
         title:'Detailed Review (12 Dimensions)',
         desc:'Claude Sonnet reviews the script across 12 quality dimensions. Each dimension receives a score. Overall grade must be A+ to pass.',
         items:[
           'Model: Claude Sonnet (~$0.50)',
           'Dimensions: hook strength, retention hooks, originality, AI detection risk',
-          'Dimensions: emotional impact, actionability, Pictory compatibility, CTR potential',
+          'Dimensions: emotional impact, actionability, CapCut compatibility, CTR potential',
           'Dimensions: shareability, closing CTA strength, amplification variety, micro-story presence',
           'PASS: A+ grade across all dimensions',
           'FAIL: loops back to Fix step (max 3 review-fix cycles)',
@@ -887,7 +887,7 @@
           'Varies amplification beat phrasing (rotate from bank)',
           'Sharpens confrontational closing CTA',
           'Kills any detected AI-tell phrases',
-          'Must maintain line count within 107-133 range',
+          'Must maintain line count within 128-160 range',
           'Saves as next revision: [BEC-D.S]-Title.txt'
         ]
       }
