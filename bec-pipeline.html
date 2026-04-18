@@ -599,7 +599,7 @@
   <h1>BEC Pipeline Architecture</h1>
   <p class="subtitle">Business Execution Central &mdash; 7-Step Script Generation Pipeline (with GPT-4o External Eval)</p>
   <div class="header-tags">
-    <span class="header-tag">128&ndash;143 Lines Target</span>
+    <span class="header-tag">133&ndash;143 Lines Target</span>
     <span class="header-tag">160 Hard Limit</span>
     <span class="header-tag">Sonnet + Haiku + GPT-4o</span>
     <span class="header-tag">10 Scripts/Day</span>
@@ -733,9 +733,9 @@
 
   <!-- Line Budget -->
   <div class="info-card">
-    <h4>Line Budget (ElevenLabs/CapCut ~3.8s/line)</h4>
+    <h4>Line Budget (ElevenLabs/CapCut ~3.63s/line)</h4>
     <ul>
-      <li><span class="icon" style="background:var(--success)"></span>Target: <strong style="color:var(--success)">128&ndash;143</strong> narration lines</li>
+      <li><span class="icon" style="background:var(--success)"></span>Target: <strong style="color:var(--success)">133&ndash;143</strong> narration lines</li>
       <li><span class="icon" style="background:var(--warning)"></span>Hard limit: <strong style="color:var(--warning)">160</strong> lines / <strong style="color:var(--warning)">1,250</strong> words</li>
       <li><span class="icon" style="background:var(--sonnet)"></span>Target duration: 8&ndash;9 min (max 10 min)</li>
       <li><span class="icon" style="background:var(--text-dim)"></span>First drafts avg 350&ndash;410 lines (budget for trimming pass)</li>
@@ -823,13 +823,13 @@
   const steps = [
     {
       num:1, name:'Generate', model:'sonnet', cost:'~$0.80',
-      tip:'Create script draft via Claude Sonnet. Enforce 128-143 lines. Must include 1-2 micro-stories, max 2 amplification beats, confrontational CTA.',
+      tip:'Create script draft via Claude Sonnet. Enforce 133-143 lines. Must include 1-2 micro-stories, max 2 amplification beats, confrontational CTA.',
       detail:{
         title:'Script Generation',
-        desc:'The generator reads BEC-Script-Agent-Instructions.md and 2-3 existing A+ scripts as benchmarks, then produces a full draft enforcing the 128-143 line target.',
+        desc:'The generator reads BEC-Script-Agent-Instructions.md and 2-3 existing A+ scripts as benchmarks, then produces a full draft enforcing the 133-143 line target.',
         items:[
           'Model: Claude Sonnet (~$0.80 per generation)',
-          'Target: 128-143 narration lines, 900-1,150 words',
+          'Target: 133-143 narration lines, 900-1,150 words',
           'Must follow 5-section structure: Title, Hook, Stakes, List, Closing',
           'Include 1-2 micro-stories with present tense and sensory detail',
           'Max 2 amplification beats, rotated from 8-phrase bank',
@@ -852,8 +852,8 @@
           'FAIL if: >160 lines OR >1,250 words',
           'On FAIL: return to Generator for trimming (1 retry)',
           'Counts total lines including blank lines (ElevenLabs/CapCut treat them as scene breaks)',
-          'ElevenLabs/CapCut timing: ~3.8 seconds per line (calibrated Apr 2026)',
-          '160 lines \u00d7 3.8s = ~10m 08s (hard max for video length)'
+          'ElevenLabs/CapCut timing: ~3.63 seconds per line (calibrated Apr 2026)',
+          '160 lines \u00d7 3.63s = ~9m 41s (hard max for video length)'
         ]
       }
     },
