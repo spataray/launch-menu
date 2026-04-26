@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KDP Factory Pipeline Architecture</title>
+<style>
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#0d1117;--bg2:#161b22;--bg3:#21262d;
+    --text:#c9d1d9;--text-dim:#8b949e;--text-bright:#f0f6fc;
+    --kdp-green:#8bc34a;--kdp-green-dim:#689f38;
+    --architect:#58a6ff;--ghostwriter:#bc8cff;--humanizer:#ff7b72;
+    --line-color:rgba(255,255,255,0.1);
+    --card-bg:rgba(255,255,255,0.05);
+    --card-border:rgba(255,255,255,0.08);
+  }
+  html{font-size:14px;scroll-behavior:smooth}
+  body{
+    background:var(--bg);color:var(--text);
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    min-height:100vh;overflow-x:hidden;
+    display:flex;flex-direction:column;align-items:center;
+  }
+
+  header{
+    text-align:center;padding:3rem 1rem 2rem;width:100%;
+    background:linear-gradient(180deg,rgba(22,33,62,.6) 0%,transparent 100%);
+  }
+  header h1{
+    font-size:2rem;font-weight:700;letter-spacing:.1em;
+    color:var(--kdp-green);text-transform:uppercase;
+  }
+  header p.subtitle{
+    color:var(--text-dim);font-size:1rem;margin-top:.4rem;
+  }
+
+  .content-wrap{
+    width:100%;max-width:1100px;padding:0 1.5rem;
+  }
+  section{margin-bottom:3rem}
+  .section-title{
+    font-size:1.1rem;color:var(--kdp-green);margin-bottom:1.5rem;
+    text-transform:uppercase;letter-spacing:.1em;font-weight:600;
+    padding-bottom:.5rem;border-bottom:1px solid var(--line-color);
+  }
+
+  /* ── Pipeline Flow ── */
+  .pipeline-flow{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:1rem;padding:2rem 0;position:relative;
+  }
+  .step{
+    flex:1;display:flex;flex-direction:column;align-items:center;
+    position:relative;cursor:pointer;
+  }
+  .step-box{
+    width:100%;max-width:240px;border-radius:12px;padding:1.5rem 1rem;
+    text-align:center;border:2px solid transparent;
+    background:var(--card-bg);transition:all .3s ease;
+  }
+  .step.architect .step-box{ border-color:rgba(88,166,255,0.3); background:rgba(88,166,255,0.05); }
+  .step.ghostwriter .step-box{ border-color:rgba(188,140,255,0.3); background:rgba(188,140,255,0.05); }
+  .step.humanizer .step-box{ border-color:rgba(255,123,114,0.3); background:rgba(255,123,114,0.05); }
+
+  .step:hover .step-box{ transform:translateY(-5px); }
+  .step.architect:hover .step-box{ border-color:var(--architect); box-shadow:0 0 20px rgba(88,166,255,0.2); }
+  .step.ghostwriter:hover .step-box{ border-color:var(--ghostwriter); box-shadow:0 0 20px rgba(188,140,255,0.2); }
+  .step.humanizer:hover .step-box{ border-color:var(--humanizer); box-shadow:0 0 20px rgba(255,123,114,0.2); }
+
+  .step-num{ font-size:.7rem; color:var(--text-dim); margin-bottom:.5rem; text-transform:uppercase; }
+  .step-name{ font-size:1.1rem; font-weight:700; color:var(--text-bright); }
+  .step-role{ font-size:.8rem; margin-top:.4rem; color:var(--text-dim); }
+
+  .connector{
+    font-size:1.5rem; color:var(--line-color);
+  }
+
+  /* ── Details ── */
+  .detail-panel{
+    background:var(--bg2); border:1px solid var(--card-border);
+    border-radius:14px; padding:2rem; margin-top:1rem;
+    display:none;
+  }
+  .detail-panel.active{ display:block; animation:fadeIn .4s ease; }
+  @keyframes fadeIn{ from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+  .detail-panel h3{ color:var(--text-bright); margin-bottom:1rem; display:flex; align-items:center; gap:.8rem; }
+  .detail-panel p{ color:var(--text-dim); line-height:1.6; margin-bottom:1.5rem; }
+  .detail-list{ list-style:none; }
+  .detail-list li{
+    position:relative; padding-left:1.5rem; margin-bottom:.8rem; color:var(--text);
+  }
+  .detail-list li::before{
+    content:'→'; position:absolute; left:0; color:var(--kdp-green);
+  }
+
+  /* ── Project Structure ── */
+  .dir-tree{
+    background:var(--bg2); padding:1.5rem; border-radius:10px;
+    font-family:monospace; color:var(--text); line-height:1.5;
+    border:1px solid var(--card-border);
+  }
+  .dir-tree .folder{ color:var(--architect); font-weight:bold; }
+  .dir-tree .file{ color:var(--text-dim); }
+
+  footer{
+    text-align:center; padding:3rem; color:var(--text-dim); font-size:.8rem;
+    border-top:1px solid var(--line-color); width:100%;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>KDP Factory Pipeline</h1>
+  <p class="subtitle">Standalone autonomous book production engine</p>
+</header>
+
+<div class="content-wrap">
+
+  <section>
+    <div class="section-title">The 3-Agent Core</div>
+    <div class="pipeline-flow">
+      <div class="step architect" onclick="showDetail('architect')">
+        <div class="step-box">
+          <div class="step-num">Agent 01</div>
+          <div class="step-name">Architect</div>
+          <div class="step-role">Strategy & Outlining</div>
+        </div>
+      </div>
+      <div class="connector">➤</div>
+      <div class="step ghostwriter" onclick="showDetail('ghostwriter')">
+        <div class="step-box">
+          <div class="step-num">Agent 02</div>
+          <div class="step-name">Ghostwriter</div>
+          <div class="step-role">Prose & Drafting</div>
+        </div>
+      </div>
+      <div class="connector">➤</div>
+      <div class="step humanizer" onclick="showDetail('humanizer')">
+        <div class="step-box">
+          <div class="step-num">Agent 03</div>
+          <div class="step-name">Humanizer</div>
+          <div class="step-role">Voice & Polishing</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="architect-detail" class="detail-panel">
+      <h3><span style="color:var(--architect)">●</span> The Architect</h3>
+      <p>The Architect is responsible for the skeletal structure of the book. It takes the initial request and transforms it into a viable commercial outline.</p>
+      <ul class="detail-list">
+        <li>Analyzes <strong>requests/book-idea.md</strong> for tone and target audience.</li>
+        <li>Generates a comprehensive <strong>outline.json</strong> in the project folder.</li>
+        <li>Defines chapter goals, key takeaways, and narrative arcs.</li>
+        <li>Ensures logical flow and professional non-fiction/fiction pacing.</li>
+      </ul>
+    </div>
+
+    <div id="ghostwriter-detail" class="detail-panel">
+      <h3><span style="color:var(--ghostwriter)">●</span> The Ghostwriter</h3>
+      <p>The workhorse of the factory. The Ghostwriter takes the Architect's outline and expands each chapter into full-length prose.</p>
+      <ul class="detail-list">
+        <li>Writes chapter-by-chapter based on the <strong>outline.json</strong>.</li>
+        <li>Maintains consistent character voices (fiction) or authority (non-fiction).</li>
+        <li>Produces <strong>chapter-X-draft.md</strong> files for every section.</li>
+        <li>Focuses on word count targets and technical accuracy.</li>
+      </ul>
+    </div>
+
+    <div id="humanizer-detail" class="detail-panel">
+      <h3><span style="color:var(--humanizer)">●</span> The Humanizer</h3>
+      <p>The final gatekeeper. The Humanizer reviews the Ghostwriter's drafts to remove "AI-isms" and inject personality, warmth, and engagement.</p>
+      <ul class="detail-list">
+        <li>Refines sentence structure for better flow and rhythm.</li>
+        <li>Adds sensory details, idioms, and natural conversational patterns.</li>
+        <li>Produces the <strong>chapter-X-FINAL.md</strong> versions.</li>
+        <li>Finalizes the <strong>MANUSCRIPT_RAW.md</strong> for compilation.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title">Project Architecture</div>
+    <div class="dir-tree">
+      <span class="folder">kdp-factory/</span><br>
+      ├── <span class="folder">agents/</span> <span class="file">(Architect.md, Ghostwriter.md, Humanizer.md)</span><br>
+      ├── <span class="folder">requests/</span> <span class="file">(Incoming book orders)</span><br>
+      ├── <span class="folder">projects/</span> <span class="file">(The construction site)</span><br>
+      │&nbsp;&nbsp; └── <span class="folder">the-48-hour-brand/</span><br>
+      │&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; ├── outline.json<br>
+      │&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; ├── chapter-1-draft.md<br>
+      │&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; └── chapter-1-FINAL.md<br>
+      ├── <span class="folder">output/</span> <span class="file">(The Showroom: .docx, .epub)</span><br>
+      └── <span class="file">scripts/ (The engine logic)</span>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-title">Workflow Execution</div>
+    <p style="color:var(--text-dim); line-height:1.6; margin-bottom:1rem;">Trigger the factory using the specialized command:</p>
+    <div style="background:var(--bg3); padding:1rem; border-radius:8px; font-family:monospace; color:var(--kdp-green); border:1px solid var(--card-border);">
+      gemini "Create+Book requests/my-book.md"
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  KDP Factory Architecture &mdash; Family-Friendly Publishing
+</footer>
+
+<script>
+  function showDetail(id) {
+    document.querySelectorAll('.detail-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(id + '-detail').classList.add('active');
+    
+    // Smooth scroll to detail
+    document.getElementById(id + '-detail').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  
+  // Show architect by default
+  showDetail('architect');
+</script>
+
+</body>
+</html>
