@@ -10,7 +10,7 @@
     --bg:#0d1117;--bg2:#161b22;--bg3:#21262d;
     --text:#c9d1d9;--text-dim:#8b949e;--text-bright:#f0f6fc;
     --kdp-green:#8bc34a;--kdp-green-dim:#689f38;
-    --architect:#58a6ff;--ghostwriter:#bc8cff;--humanizer:#ff7b72;
+    --market-analyst:#f2cc60;--architect:#58a6ff;--ghostwriter:#bc8cff;--humanizer:#ff7b72;--reviewer:#7ee787;
     --line-color:rgba(255,255,255,0.1);
     --card-bg:rgba(255,255,255,0.05);
     --card-border:rgba(255,255,255,0.08);
@@ -36,7 +36,7 @@
   }
 
   .content-wrap{
-    width:100%;max-width:1100px;padding:0 1.5rem;
+    width:100%;max-width:1200px;padding:0 1.5rem;
   }
   section{margin-bottom:3rem}
   .section-title{
@@ -48,25 +48,29 @@
   /* ── Pipeline Flow ── */
   .pipeline-flow{
     display:flex;align-items:center;justify-content:space-between;
-    gap:1rem;padding:2rem 0;position:relative;
+    gap:0.8rem;padding:2rem 0;position:relative;
   }
   .step{
     flex:1;display:flex;flex-direction:column;align-items:center;
     position:relative;cursor:pointer;
   }
   .step-box{
-    width:100%;max-width:240px;border-radius:12px;padding:1.5rem 1rem;
+    width:100%;max-width:200px;border-radius:12px;padding:1.5rem 0.5rem;
     text-align:center;border:2px solid transparent;
     background:var(--card-bg);transition:all .3s ease;
   }
+  .step.market-analyst .step-box{ border-color:rgba(242,204,96,0.3); background:rgba(242,204,96,0.05); }
   .step.architect .step-box{ border-color:rgba(88,166,255,0.3); background:rgba(88,166,255,0.05); }
   .step.ghostwriter .step-box{ border-color:rgba(188,140,255,0.3); background:rgba(188,140,255,0.05); }
   .step.humanizer .step-box{ border-color:rgba(255,123,114,0.3); background:rgba(255,123,114,0.05); }
+  .step.reviewer .step-box{ border-color:rgba(126,231,135,0.3); background:rgba(126,231,135,0.05); }
 
   .step:hover .step-box{ transform:translateY(-5px); }
+  .step.market-analyst:hover .step-box{ border-color:var(--market-analyst); box-shadow:0 0 20px rgba(242,204,96,0.2); }
   .step.architect:hover .step-box{ border-color:var(--architect); box-shadow:0 0 20px rgba(88,166,255,0.2); }
   .step.ghostwriter:hover .step-box{ border-color:var(--ghostwriter); box-shadow:0 0 20px rgba(188,140,255,0.2); }
   .step.humanizer:hover .step-box{ border-color:var(--humanizer); box-shadow:0 0 20px rgba(255,123,114,0.2); }
+  .step.reviewer:hover .step-box{ border-color:var(--reviewer); box-shadow:0 0 20px rgba(126,231,135,0.2); }
 
   .step-num{ font-size:.7rem; color:var(--text-dim); margin-bottom:.5rem; text-transform:uppercase; }
   .step-name{ font-size:1.1rem; font-weight:700; color:var(--text-bright); }
@@ -120,8 +124,16 @@
 <div class="content-wrap">
 
   <section>
-    <div class="section-title">The 3-Agent Core</div>
+    <div class="section-title">The Full Production Pipeline</div>
     <div class="pipeline-flow">
+      <div class="step market-analyst" onclick="showDetail('market-analyst')">
+        <div class="step-box">
+          <div class="step-num">Agent 00</div>
+          <div class="step-name">Market Analyst</div>
+          <div class="step-role">Niche & Keywords</div>
+        </div>
+      </div>
+      <div class="connector">➤</div>
       <div class="step architect" onclick="showDetail('architect')">
         <div class="step-box">
           <div class="step-num">Agent 01</div>
@@ -145,6 +157,25 @@
           <div class="step-role">Voice & Polishing</div>
         </div>
       </div>
+      <div class="connector">➤</div>
+      <div class="step reviewer" onclick="showDetail('reviewer')">
+        <div class="step-box">
+          <div class="step-num">Agent 04</div>
+          <div class="step-name">Reviewer</div>
+          <div class="step-role">QA & Compliance</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="market-analyst-detail" class="detail-panel">
+      <h3><span style="color:var(--market-analyst)">●</span> The Market Analyst</h3>
+      <p>The Market Analyst ensures that every project has a commercial target. It performs deep-dive research into current trends and Amazon KDP categories.</p>
+      <ul class="detail-list">
+        <li>Identifies high-traffic, low-competition keywords.</li>
+        <li>Analyzes competitor books for tone, length, and pricing strategy.</li>
+        <li>Validates the <strong>request/book-idea.md</strong> against market demand.</li>
+        <li>Suggests optimal KDP categories and sub-genres.</li>
+      </ul>
     </div>
 
     <div id="architect-detail" class="detail-panel">
@@ -171,12 +202,23 @@
 
     <div id="humanizer-detail" class="detail-panel">
       <h3><span style="color:var(--humanizer)">●</span> The Humanizer</h3>
-      <p>The final gatekeeper. The Humanizer reviews the Ghostwriter's drafts to remove "AI-isms" and inject personality, warmth, and engagement.</p>
+      <p>The final gatekeeper of tone. The Humanizer reviews the Ghostwriter's drafts to remove "AI-isms" and inject personality, warmth, and engagement.</p>
       <ul class="detail-list">
         <li>Refines sentence structure for better flow and rhythm.</li>
         <li>Adds sensory details, idioms, and natural conversational patterns.</li>
         <li>Produces the <strong>chapter-X-FINAL.md</strong> versions.</li>
+        <li>Prepares the manuscript for final QA review.</li>
+      </ul>
+    </div>
+
+    <div id="reviewer-detail" class="detail-panel">
+      <h3><span style="color:var(--reviewer)">●</span> The Reviewer</h3>
+      <p>The final quality control agent. The Reviewer performs a comprehensive check of the entire manuscript before it reaches the output folder.</p>
+      <ul class="detail-list">
+        <li>Verifies consistency across all chapters and character arcs.</li>
+        <li>Checks for adherence to KDP formatting and compliance standards.</li>
         <li>Finalizes the <strong>MANUSCRIPT_RAW.md</strong> for compilation.</li>
+        <li>Generates the <strong>KDP_SUBMISSION_INFO.txt</strong> metadata file.</li>
       </ul>
     </div>
   </section>
@@ -185,15 +227,16 @@
     <div class="section-title">Project Architecture</div>
     <div class="dir-tree">
       <span class="folder">kdp-factory/</span><br>
-      ├── <span class="folder">agents/</span> <span class="file">(Architect.md, Ghostwriter.md, Humanizer.md)</span><br>
+      ├── <span class="folder">agents/</span> <span class="file">(Architect.md, Ghostwriter.md, Humanizer.md, MarketAnalyst.md, Reviewer.md)</span><br>
       ├── <span class="folder">requests/</span> <span class="file">(Incoming book orders)</span><br>
       ├── <span class="folder">projects/</span> <span class="file">(The construction site)</span><br>
       │&nbsp;&nbsp; └── <span class="folder">the-48-hour-brand/</span><br>
       │&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; ├── outline.json<br>
       │&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; ├── chapter-1-draft.md<br>
       │&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; └── chapter-1-FINAL.md<br>
-      ├── <span class="folder">output/</span> <span class="file">(The Showroom: .docx, .epub)</span><br>
-      └── <span class="file">scripts/ (The engine logic)</span>
+      ├── <span class="folder">output/</span> <span class="file">(The Showroom: .docx, KDP_SUBMISSION_INFO.txt)</span><br>
+      ├── <span class="folder">templates/</span> <span class="file">(KDP formatting layouts)</span><br>
+      └── <span class="file">scripts/ (The engine room logic)</span>
     </div>
   </section>
 
@@ -220,8 +263,8 @@
     document.getElementById(id + '-detail').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
   
-  // Show architect by default
-  showDetail('architect');
+  // Show market-analyst by default
+  showDetail('market-analyst');
 </script>
 
 </body>
